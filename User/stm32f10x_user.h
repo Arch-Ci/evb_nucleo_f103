@@ -1,0 +1,194 @@
+
+#ifndef __STM32F10X_USER_H
+#define __STM32F10X_USER_H
+
+#ifdef __cplusplus
+ extern "C" {
+#endif 
+
+#if defined(__CC_ARM)
+#pragma anon_unions
+#endif
+
+#include "stm32f10x.h"
+#include "qmaX981.h"
+#include "qma6100.h"
+#include "qmcX983.h"
+#include "qmp6988.h"
+#include "qmi8610.h"
+//#include "qmi8658.h"
+#include "qmc6308.h"
+#include "px318j.h"
+
+#include "../../algo/imu/qst_algo_imu.h"
+#include "../../algo/compass/ICAL.h"
+#include "../../upper/qst_packet.h"
+
+
+typedef void (*int_callback)(void);
+enum 
+{
+	QST_REPORT_OFF,
+	QST_REPORT_POLLING,
+	QST_REPORT_DRI
+};
+
+typedef enum
+{
+	QST_SENSOR_NONE,
+	QST_SENSOR_ACCEL,
+	QST_SENSOR_MAG,
+	QST_SENSOR_GYRO,
+	QST_SENSOR_PRESS,
+	QST_SENSOR_LIGHT,	
+	QST_SENSOR_ACCGYRO,
+
+	QST_SENSOR_TOTAL
+} qst_sensor_type;
+
+typedef enum
+{
+	QST_ACCEL_NONE,
+	QST_ACCEL_QMAX981,
+	QST_ACCEL_QMA6100,
+	QST_ACCEL_QMI8610,
+	QST_ACCEL_QMI8658,
+
+	QST_ACCEL_TOTAL
+} qst_acc_type;
+
+typedef enum
+{
+	QST_MAG_NONE,
+	QST_MAG_QMC7983,
+	QST_MAG_QMC6308,
+	QST_MAG_QMC6310,
+
+	QST_MAG_TOTAL
+} qst_mag_type;
+
+typedef enum
+{
+	QST_GYRO_NONE,
+	QST_GYRO_QMI8610,
+	QST_GYRO_QMI8658,
+
+	QST_GYRO_TOTAL
+} qst_gyro_type;
+
+typedef enum
+{
+	QST_ACCGYRO_NONE,
+	QST_ACCGYRO_QMI8610,
+	QST_ACCGYRO_QMI8658,
+
+	QST_ACCGYRO_TOTAL
+} qst_accgyro_type;
+
+typedef enum
+{
+	QST_PRESS_NONE,
+	QST_PRESS_QMP6988,
+
+	QST_PRESS_TOTAL
+} qst_press_type;
+
+typedef struct
+{
+	int sensor;
+	float timestamp;
+    union {
+        int data1[3];
+        struct {
+            int x1;
+            int y1;
+            int z1;
+        };
+    };	
+    union {
+        int data2[3];
+        struct {
+            int x2;
+            int y2;
+            int z2;
+        };
+    };
+} sensors_raw_t;
+
+
+typedef struct
+{
+	int sensor;
+	float timestamp;
+    union {
+        float data1[3];
+        struct {
+            float x1;
+            float y1;
+            float z1;
+        };
+    };	
+    union {
+        float data2[3];
+        struct {
+            float x2;
+            float y2;
+            float z2;
+        };
+    };
+	unsigned int step;
+} sensors_vec_t;
+
+
+typedef struct
+{
+	qst_acc_type		accel;
+	qst_mag_type		mag;
+	qst_gyro_type		gyro;
+	qst_press_type		press;
+	qst_accgyro_type	accgyro;
+
+	int					report_mode;
+
+	unsigned char		irq1_flag;
+	unsigned char		irq2_flag;
+	int_callback		irq1_func;
+	int_callback		irq2_func;
+
+	int_callback		tim2_func;
+	int_callback		tim3_func;
+	int_callback		tim4_func;
+
+	//sensors_raw_t		out_raw;
+	sensors_vec_t		out;
+	sensors_vec_t		imu;
+} qst_evb_t;
+
+
+
+typedef struct
+{
+	float			acc_bis[3];
+	float			gyro_bis[3];
+	short			imu_cali;
+
+	TRANSFORM_T		mag;
+	short			mag_accuracy;
+} qst_evb_offset_t;
+
+
+
+typedef struct
+{
+	short acc_raw[3];
+	short gyr_raw[3];
+	short mag_raw[3];
+} qst_ano_tc_t;
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

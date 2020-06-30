@@ -1,0 +1,8 @@
+Dependencies for Project 'qst_lib_compass', Target 'Compass': (DO NOT MODIFY !)
+F (..\..\algo\compass\ical.c)(0x5D2A900C)(--c99 --gnu -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections-I.\RTE\_Compass-IC:\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DSTM32F10X_MD-o .\objects\ical.o --omf_browse .\objects\ical.crf --depend .\objects\ical.d)
+I (..\..\algo\compass\ICAL.h)(0x5D26EE0E)
+I (..\..\algo\compass\ICFG.h)(0x5D26EFB2)
+I (C:\Keil_v5\ARM\ARMCC\include\time.h)(0x5CEB79D6)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x5CEB79E2)
+I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x5CEB79D6)

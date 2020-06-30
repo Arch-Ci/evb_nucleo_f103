@@ -1,0 +1,725 @@
+
+#include "qmi8658.h"
+#include <math.h>
+
+#define FIS210X_SLAVE_ADDR_L			0xd4		//(0x6a<<1)
+#define FIS210X_SLAVE_ADDR_H			0xd6		//(0x6b<<1)
+#define qst_printf					printf
+
+//#define QMI8658_UINT_MG_DPS
+
+enum
+{
+	AXIS_X = 0,
+	AXIS_Y = 1,
+	AXIS_Z = 2,
+
+	AXIS_TOTAL
+};
+
+typedef struct 
+{
+	short 				sign[AXIS_TOTAL];
+	unsigned short 		map[AXIS_TOTAL];
+}qst_imu_layout;
+
+static uint16_t acc_lsb_div = 0;
+static uint16_t gyro_lsb_div = 0;
+static uint16_t ae_q_lsb_div = (1 << 14);
+static uint16_t ae_v_lsb_div = (1 << 10);
+static uint32_t imu_timestamp = 0;
+static struct FisImuConfig qmi8658_config;
+static uint8_t qmi8658_slave_addr = FIS210X_SLAVE_ADDR_L;
+
+uint8_t Qmi8658_write_reg(uint8_t reg, uint8_t value)
+{
+	uint8_t ret=0;
+	uint32_t retry = 0;
+
+	while((!ret) && (retry++ < 5))
+	{
+#if defined(QST_USE_SPI)
+		ret = qst_fisimu_spi_write(reg,value);
+#elif defined(QST_USE_SW_I2C)
+		ret = qst_sw_writereg(qmi8658_slave_addr, reg, value);
+#else
+		ret = I2C_ByteWrite(qmi8658_slave_addr, reg,value);
+#endif
+	}
+	return ret;
+}
+
+uint8_t Qmi8658_write_regs(uint8_t reg, uint8_t *value, uint8_t len)
+{
+	uint8_t ret=0;	
+	uint32_t retry = 0;
+
+	while((!ret) && (retry++ < 5))
+	{
+#if defined(QST_USE_SPI)
+		ret = qst_fisimu_spi_write_bytes(reg, value, len);
+#elif defined(QST_USE_SW_I2C)
+		ret = qst_sw_writeregs(qmi8658_slave_addr, reg, value, len);
+#else
+		ret = I2C_BufferRead(qmi8658_slave_addr, reg, value, len);
+#endif
+	}
+	return ret;
+}
+
+uint8_t Qmi8658_read_reg(uint8_t reg, uint8_t* buf, uint16_t len)
+{
+	uint8_t ret=0;
+	uint32_t retry = 0;
+
+	while((!ret) && (retry++ < 5))
+	{
+#if defined(QST_USE_SPI)
+		ret = qst_8658_spi_read(reg, buf, len);
+#elif defined(QST_USE_SW_I2C)
+		ret = qst_sw_readreg(qmi8658_slave_addr, reg, buf, len);
+#else
+		ret = I2C_BufferRead(qmi8658_slave_addr, reg, buf,  len);
+#endif
+	}
+	return ret;
+}
+
+#if 0
+static qst_imu_layout imu_map;
+
+void Qmi8658_set_layout(short layout)
+{
+	if(layout == 0)
+	{
+		imu_map.sign[AXIS_X] = 1;
+		imu_map.sign[AXIS_Y] = 1;
+		imu_map.sign[AXIS_Z] = 1;
+		imu_map.map[AXIS_X] = AXIS_X;
+		imu_map.map[AXIS_Y] = AXIS_Y;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+	else if(layout == 1)
+	{
+		imu_map.sign[AXIS_X] = -1;
+		imu_map.sign[AXIS_Y] = 1;
+		imu_map.sign[AXIS_Z] = 1;
+		imu_map.map[AXIS_X] = AXIS_Y;
+		imu_map.map[AXIS_Y] = AXIS_X;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+	else if(layout == 2)
+	{
+		imu_map.sign[AXIS_X] = -1;
+		imu_map.sign[AXIS_Y] = -1;
+		imu_map.sign[AXIS_Z] = 1;
+		imu_map.map[AXIS_X] = AXIS_X;
+		imu_map.map[AXIS_Y] = AXIS_Y;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+	else if(layout == 3)
+	{
+		imu_map.sign[AXIS_X] = 1;
+		imu_map.sign[AXIS_Y] = -1;
+		imu_map.sign[AXIS_Z] = 1;
+		imu_map.map[AXIS_X] = AXIS_Y;
+		imu_map.map[AXIS_Y] = AXIS_X;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}	
+	else if(layout == 4)
+	{
+		imu_map.sign[AXIS_X] = -1;
+		imu_map.sign[AXIS_Y] = 1;
+		imu_map.sign[AXIS_Z] = -1;
+		imu_map.map[AXIS_X] = AXIS_X;
+		imu_map.map[AXIS_Y] = AXIS_Y;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+	else if(layout == 5)
+	{
+		imu_map.sign[AXIS_X] = 1;
+		imu_map.sign[AXIS_Y] = 1;
+		imu_map.sign[AXIS_Z] = -1;
+		imu_map.map[AXIS_X] = AXIS_Y;
+		imu_map.map[AXIS_Y] = AXIS_X;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+	else if(layout == 6)
+	{
+		imu_map.sign[AXIS_X] = 1;
+		imu_map.sign[AXIS_Y] = -1;
+		imu_map.sign[AXIS_Z] = -1;
+		imu_map.map[AXIS_X] = AXIS_X;
+		imu_map.map[AXIS_Y] = AXIS_Y;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+	else if(layout == 7)
+	{
+		imu_map.sign[AXIS_X] = -1;
+		imu_map.sign[AXIS_Y] = -1;
+		imu_map.sign[AXIS_Z] = -1;
+		imu_map.map[AXIS_X] = AXIS_Y;
+		imu_map.map[AXIS_Y] = AXIS_X;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+	else		
+	{
+		imu_map.sign[AXIS_X] = 1;
+		imu_map.sign[AXIS_Y] = 1;
+		imu_map.sign[AXIS_Z] = 1;
+		imu_map.map[AXIS_X] = AXIS_X;
+		imu_map.map[AXIS_Y] = AXIS_Y;
+		imu_map.map[AXIS_Z] = AXIS_Z;
+	}
+}
+#endif
+
+void Qmi8658_config_acc(enum Qmi8658_AccRange range, enum Qmi8658_AccOdr odr, enum Qmi8658_LpfConfig lpfEnable, enum Qmi8658_StConfig stEnable)
+{
+	unsigned char ctl_dada;
+
+	switch(range)
+	{
+		case AccRange_2g:
+			acc_lsb_div = (1<<14);
+			break;
+		case AccRange_4g:
+			acc_lsb_div = (1<<13);
+			break;
+		case AccRange_8g:
+			acc_lsb_div = (1<<12);
+			break;
+		case AccRange_16g:
+			acc_lsb_div = (1<<11);
+			break;
+		default: 
+			range = AccRange_8g;
+			acc_lsb_div = (1<<12);
+	}
+	if(stEnable == St_Enable)
+		ctl_dada = (unsigned char)range|(unsigned char)odr|0x80;
+	else
+		ctl_dada = (unsigned char)range|(unsigned char)odr;
+		
+	Qmi8658_write_reg(Qmi8658Register_Ctrl2, ctl_dada);
+// set LPF & HPF
+	Qmi8658_read_reg(Qmi8658Register_Ctrl5, &ctl_dada,1);
+	ctl_dada &= 0xf0;
+	if(lpfEnable == Lpf_Enable)
+	{
+		ctl_dada |= A_LSP_MODE_3;
+		ctl_dada |= 0x01;
+	}
+	else
+	{
+		ctl_dada &= ~0x01;
+	}
+	ctl_dada = 0x00;
+	Qmi8658_write_reg(Qmi8658Register_Ctrl5,ctl_dada);
+// set LPF & HPF
+}
+
+void Qmi8658_config_gyro(enum Qmi8658_GyrRange range, enum Qmi8658_GyrOdr odr, enum Qmi8658_LpfConfig lpfEnable, enum Qmi8658_StConfig stEnable)
+{
+	// Set the CTRL3 register to configure dynamic range and ODR
+	unsigned char ctl_dada; 
+
+	// Store the scale factor for use when processing raw data
+	switch (range)
+	{
+		case GyrRange_32dps:
+			gyro_lsb_div = 1024;
+			break;
+		case GyrRange_64dps:
+			gyro_lsb_div = 512;
+			break;
+		case GyrRange_128dps:
+			gyro_lsb_div = 256;
+			break;
+		case GyrRange_256dps:
+			gyro_lsb_div = 128;
+			break;
+		case GyrRange_512dps:
+			gyro_lsb_div = 64;
+			break;
+		case GyrRange_1024dps:
+			gyro_lsb_div = 32;
+			break;
+		case GyrRange_2048dps:
+			gyro_lsb_div = 16;
+			break;
+		case GyrRange_4096dps:
+			gyro_lsb_div = 8;
+			break;
+		default: 
+			range = GyrRange_512dps;
+			gyro_lsb_div = 64;
+			break;
+	}
+
+	if(stEnable == St_Enable)
+		ctl_dada = (unsigned char)range|(unsigned char)odr|0x80;
+	else
+		ctl_dada = (unsigned char)range | (unsigned char)odr;
+	Qmi8658_write_reg(Qmi8658Register_Ctrl3, ctl_dada);
+
+// Conversion from degrees/s to rad/s if necessary
+// set LPF & HPF
+	Qmi8658_read_reg(Qmi8658Register_Ctrl5, &ctl_dada,1);
+	ctl_dada &= 0x0f;
+	if(lpfEnable == Lpf_Enable)
+	{
+		ctl_dada |= G_LSP_MODE_3;
+		ctl_dada |= 0x10;
+	}
+	else
+	{
+		ctl_dada &= ~0x10;
+	}
+	ctl_dada = 0x00;
+	Qmi8658_write_reg(Qmi8658Register_Ctrl5,ctl_dada);
+// set LPF & HPF
+}
+
+void Qmi8658_config_mag(enum Qmi8658_MagDev device, enum Qmi8658_MagOdr odr)
+{
+	Qmi8658_write_reg(Qmi8658Register_Ctrl4, device|odr);	
+}
+
+void Qmi8658_config_ae(enum Qmi8658_AeOdr odr)
+{
+	//Qmi8658_config_acc(AccRange_8g, AccOdr_1000Hz, Lpf_Enable, St_Enable);
+	//Qmi8658_config_gyro(GyrRange_2048dps, GyrOdr_1000Hz, Lpf_Enable, St_Enable);
+	Qmi8658_config_acc(qmi8658_config.accRange, qmi8658_config.accOdr, Lpf_Enable, St_Disable);
+	Qmi8658_config_gyro(qmi8658_config.gyrRange, qmi8658_config.gyrOdr, Lpf_Enable, St_Disable);
+	Qmi8658_config_mag(qmi8658_config.magDev, qmi8658_config.magOdr);
+	Qmi8658_write_reg(Qmi8658Register_Ctrl6, odr);
+}
+
+
+uint8_t Qmi8658_readStatus0(void)
+{
+	uint8_t status[2];
+
+	Qmi8658_read_reg(Qmi8658Register_Status0, status, sizeof(status));
+	//printf("status[0x%x	0x%x]\n",status[0],status[1]);
+
+	return status[0];
+}
+/*!
+ * \brief Blocking read of data status register 1 (::Qmi8658Register_Status1).
+ * \returns Status byte \see STATUS1 for flag definitions.
+ */
+uint8_t Qmi8658_readStatus1(void)
+{
+	uint8_t status;
+	
+	Qmi8658_read_reg(Qmi8658Register_Status1, &status, sizeof(status));
+
+	return status;
+}
+
+float Qmi8658_readTemp(void)
+{
+	uint8_t buf[2];
+	short temp = 0;
+	float temp_f = 0;
+
+	Qmi8658_read_reg(Qmi8658Register_Tempearture_L, buf, 2);
+	temp = ((short)buf[1]<<8)|buf[0];
+	temp_f = (float)temp/256.0f;
+
+	return temp_f;
+}
+
+void Qmi8658_read_acc_xyz(float acc_xyz[3])
+{
+	unsigned char	buf_reg[6];
+	short 			raw_acc_xyz[3];
+
+	Qmi8658_read_reg(Qmi8658Register_Ax_L, buf_reg, 6); 	// 0x19, 25
+	raw_acc_xyz[0] = (short)((unsigned short)(buf_reg[1]<<8) |( buf_reg[0]));
+	raw_acc_xyz[1] = (short)((unsigned short)(buf_reg[3]<<8) |( buf_reg[2]));
+	raw_acc_xyz[2] = (short)((unsigned short)(buf_reg[5]<<8) |( buf_reg[4]));
+
+	acc_xyz[0] = (raw_acc_xyz[0]*ONE_G)/acc_lsb_div;
+	acc_xyz[1] = (raw_acc_xyz[1]*ONE_G)/acc_lsb_div;
+	acc_xyz[2] = (raw_acc_xyz[2]*ONE_G)/acc_lsb_div;
+
+	//qst_printf("fis210x acc:	%f	%f	%f\n", acc_xyz[0], acc_xyz[1], acc_xyz[2]);
+}
+
+void Qmi8658_read_gyro_xyz(float gyro_xyz[3])
+{
+	unsigned char	buf_reg[6];
+	short 			raw_gyro_xyz[3];
+
+	Qmi8658_read_reg(Qmi8658Register_Gx_L, buf_reg, 6);  	// 0x1f, 31
+	raw_gyro_xyz[0] = (short)((unsigned short)(buf_reg[1]<<8) |( buf_reg[0]));
+	raw_gyro_xyz[1] = (short)((unsigned short)(buf_reg[3]<<8) |( buf_reg[2]));
+	raw_gyro_xyz[2] = (short)((unsigned short)(buf_reg[5]<<8) |( buf_reg[4]));	
+
+	gyro_xyz[0] = (raw_gyro_xyz[0]*1.0f)/gyro_lsb_div;
+	gyro_xyz[1] = (raw_gyro_xyz[1]*1.0f)/gyro_lsb_div;
+	gyro_xyz[2] = (raw_gyro_xyz[2]*1.0f)/gyro_lsb_div;
+
+	//qst_printf("fis210x gyro:	%f	%f	%f\n", gyro_xyz[0], gyro_xyz[1], gyro_xyz[2]);
+}
+
+void Qmi8658_read_xyz(float acc[3], float gyro[3], unsigned int *tim_count)
+{
+	unsigned char	buf_reg[12];
+	short 			raw_acc_xyz[3];
+	short 			raw_gyro_xyz[3];
+//	float acc_t[3];
+//	float gyro_t[3];
+
+	if(tim_count)
+	{
+		unsigned char	buf[3];
+		unsigned int timestamp;
+		Qmi8658_read_reg(Qmi8658Register_Timestamp_L, buf, 3);	// 0x18	24
+		timestamp = (unsigned int)(((unsigned int)buf[2]<<16)|((unsigned int)buf[1]<<8)|buf[0]);
+		if(timestamp > imu_timestamp)
+			imu_timestamp = timestamp;
+		else
+			imu_timestamp = (timestamp+0x1000000-imu_timestamp);
+
+		*tim_count = imu_timestamp;		
+	}
+
+	Qmi8658_read_reg(Qmi8658Register_Ax_L, buf_reg, 12); 	// 0x19, 25
+	raw_acc_xyz[0] = (short)((unsigned short)(buf_reg[1]<<8) |( buf_reg[0]));
+	raw_acc_xyz[1] = (short)((unsigned short)(buf_reg[3]<<8) |( buf_reg[2]));
+	raw_acc_xyz[2] = (short)((unsigned short)(buf_reg[5]<<8) |( buf_reg[4]));
+
+	raw_gyro_xyz[0] = (short)((unsigned short)(buf_reg[7]<<8) |( buf_reg[6]));
+	raw_gyro_xyz[1] = (short)((unsigned short)(buf_reg[9]<<8) |( buf_reg[8]));
+	raw_gyro_xyz[2] = (short)((unsigned short)(buf_reg[11]<<8) |( buf_reg[10]));
+
+#if defined(QMI8658_UINT_MG_DPS)
+	// mg
+	acc[AXIS_X] = (float)(raw_acc_xyz[AXIS_X]*1000.0f)/acc_lsb_div;
+	acc[AXIS_Y] = (float)(raw_acc_xyz[AXIS_Y]*1000.0f)/acc_lsb_div;
+	acc[AXIS_Z] = (float)(raw_acc_xyz[AXIS_Z]*1000.0f)/acc_lsb_div;
+#else
+	// m/s2
+	acc[AXIS_X] = (float)(raw_acc_xyz[AXIS_X]*ONE_G)/acc_lsb_div;
+	acc[AXIS_Y] = (float)(raw_acc_xyz[AXIS_Y]*ONE_G)/acc_lsb_div;
+	acc[AXIS_Z] = (float)(raw_acc_xyz[AXIS_Z]*ONE_G)/acc_lsb_div;
+#endif
+//	acc[AXIS_X] = imu_map.sign[AXIS_X]*acc_t[imu_map.map[AXIS_X]];
+//	acc[AXIS_Y] = imu_map.sign[AXIS_Y]*acc_t[imu_map.map[AXIS_Y]];
+//	acc[AXIS_Z] = imu_map.sign[AXIS_Z]*acc_t[imu_map.map[AXIS_Z]];
+
+#if defined(QMI8658_UINT_MG_DPS)
+	// dps
+	gyro[0] = (float)(raw_gyro_xyz[0]*1.0f)/gyro_lsb_div;
+	gyro[1] = (float)(raw_gyro_xyz[1]*1.0f)/gyro_lsb_div;
+	gyro[2] = (float)(raw_gyro_xyz[2]*1.0f)/gyro_lsb_div;
+#else
+	// rad/s
+	gyro[AXIS_X] = (float)(raw_gyro_xyz[AXIS_X]*0.01745f)/gyro_lsb_div;		// *pi/180
+	gyro[AXIS_Y] = (float)(raw_gyro_xyz[AXIS_Y]*0.01745f)/gyro_lsb_div;
+	gyro[AXIS_Z] = (float)(raw_gyro_xyz[AXIS_Z]*0.01745f)/gyro_lsb_div;
+#endif	
+//	gyro[AXIS_X] = imu_map.sign[AXIS_X]*gyro_t[imu_map.map[AXIS_X]];
+//	gyro[AXIS_Y] = imu_map.sign[AXIS_Y]*gyro_t[imu_map.map[AXIS_Y]];
+//	gyro[AXIS_Z] = imu_map.sign[AXIS_Z]*gyro_t[imu_map.map[AXIS_Z]];
+//	printf("gyro[%d	%d	%d]	[%f	%f	%f]\n"
+//					,raw_gyro_xyz[0],raw_gyro_xyz[1],raw_gyro_xyz[2]
+//					,gyro[0],gyro[1],gyro[2]);
+}
+
+
+void Qmi8658_read_xyz_raw(short raw_acc_xyz[3], short raw_gyro_xyz[3], unsigned int *tim_count)
+{
+	unsigned char	buf_reg[12];
+
+	if(tim_count)
+	{
+		unsigned char	buf[3];
+		unsigned int timestamp;
+		Qmi8658_read_reg(Qmi8658Register_Timestamp_L, buf, 3);	// 0x18	24
+		timestamp = (unsigned int)(((unsigned int)buf[2]<<16)|((unsigned int)buf[1]<<8)|buf[0]);
+		if(timestamp > imu_timestamp)
+			imu_timestamp = timestamp;
+		else
+			imu_timestamp = (timestamp+0x1000000-imu_timestamp);
+
+		*tim_count = imu_timestamp;	
+	}
+	Qmi8658_read_reg(Qmi8658Register_Ax_L, buf_reg, 12); 	// 0x19, 25
+
+	raw_acc_xyz[0] = (short)((unsigned short)(buf_reg[1]<<8) |( buf_reg[0]));
+	raw_acc_xyz[1] = (short)((unsigned short)(buf_reg[3]<<8) |( buf_reg[2]));
+	raw_acc_xyz[2] = (short)((unsigned short)(buf_reg[5]<<8) |( buf_reg[4]));
+
+	raw_gyro_xyz[0] = (short)((unsigned short)(buf_reg[7]<<8) |( buf_reg[6]));
+	raw_gyro_xyz[1] = (short)((unsigned short)(buf_reg[9]<<8) |( buf_reg[8]));
+	raw_gyro_xyz[2] = (short)((unsigned short)(buf_reg[11]<<8) |( buf_reg[10]));
+}
+
+
+void Qmi8658_read_ae(float quat[4], float velocity[3])
+{
+	unsigned char	buf_reg[14];
+	short 			raw_q_xyz[4];
+	short 			raw_v_xyz[3];
+
+	Qmi8658_read_reg(Qmi8658Register_Q1_L, buf_reg, 14);
+	raw_q_xyz[0] = (short)((unsigned short)(buf_reg[1]<<8) |( buf_reg[0]));
+	raw_q_xyz[1] = (short)((unsigned short)(buf_reg[3]<<8) |( buf_reg[2]));
+	raw_q_xyz[2] = (short)((unsigned short)(buf_reg[5]<<8) |( buf_reg[4]));
+	raw_q_xyz[3] = (short)((unsigned short)(buf_reg[7]<<8) |( buf_reg[6]));
+
+	raw_v_xyz[1] = (short)((unsigned short)(buf_reg[9]<<8) |( buf_reg[8]));
+	raw_v_xyz[2] = (short)((unsigned short)(buf_reg[11]<<8) |( buf_reg[10]));
+	raw_v_xyz[2] = (short)((unsigned short)(buf_reg[13]<<8) |( buf_reg[12]));
+
+	quat[0] = (float)(raw_q_xyz[0]*1.0f)/ae_q_lsb_div;
+	quat[1] = (float)(raw_q_xyz[1]*1.0f)/ae_q_lsb_div;
+	quat[2] = (float)(raw_q_xyz[2]*1.0f)/ae_q_lsb_div;
+	quat[3] = (float)(raw_q_xyz[3]*1.0f)/ae_q_lsb_div;
+
+	velocity[0] = (float)(raw_v_xyz[0]*1.0f)/ae_v_lsb_div;
+	velocity[1] = (float)(raw_v_xyz[1]*1.0f)/ae_v_lsb_div;
+	velocity[2] = (float)(raw_v_xyz[2]*1.0f)/ae_v_lsb_div;
+}
+
+// for XKF3
+static inline void applyScaleFactor(float scaleFactor, uint8_t nElements, uint8_t const* rawData, float* calibratedData)
+{
+	for (int i = 0; i < nElements; ++i)
+	{
+		calibratedData[i] = scaleFactor * (int16_t)((uint16_t)rawData[2 * i] |((uint16_t)rawData[2 * i + 1] << 8));
+	}
+}
+
+void Qmi8658_processAccelerometerData(uint8_t const* rawData, float* calibratedData)
+{
+	applyScaleFactor((float)(ONE_G/acc_lsb_div), 3, rawData, calibratedData);
+}
+
+void Qmi8658_processGyroscopeData(uint8_t const* rawData, float* calibratedData)
+{
+	applyScaleFactor((float)(M_PI/(gyro_lsb_div*180)), 3, rawData, calibratedData);
+}
+
+void Qmi8658_read_rawsample(struct FisImuRawSample *sample)
+{
+	Qmi8658_read_reg(Qmi8658Register_Timestamp_L, sample->timestamp, sizeof(sample->timestamp));
+	sample->accelerometerData = sample->sampleBuffer;
+	sample->gyroscopeData = sample->sampleBuffer+QMI8658_SAMPLE_SIZE;
+	Qmi8658_read_reg(Qmi8658Register_Ax_L, (uint8_t*)sample->accelerometerData, QMI8658_SAMPLE_SIZE);
+	Qmi8658_read_reg(Qmi8658Register_Gx_L, (uint8_t*)sample->gyroscopeData, QMI8658_SAMPLE_SIZE);
+}
+
+static void writeCalibrationVectorBuffer(float const* calVector, float conversionFactor, uint8_t fractionalBits)
+{
+	int i;
+	int16_t o;
+	uint8_t calCmd[6];
+	//calCmd[0] = Qmi8658Register_Cal1_L;
+
+	for(i = 0; i < 3; ++i)
+	{
+		o = (int16_t)roundf(calVector[i] * conversionFactor * (1 << fractionalBits));
+		calCmd[(2 * i)] = o & 0xFF;
+		calCmd[(2 * i) + 1] = o >> 8;
+	}
+	Qmi8658_write_regs(Qmi8658Register_Cal1_L, calCmd, sizeof(calCmd));
+}
+
+void Qmi8658_doCtrl9Command(enum Qmi8658_Ctrl9Command cmd)
+{
+	uint8_t gyroConfig;
+	const uint8_t oisModeBits = 0x06;
+	unsigned char oisEnabled;
+	uint8_t status = 0;
+	uint32_t count = 0;
+
+	Qmi8658_read_reg(Qmi8658Register_Ctrl3, &gyroConfig, sizeof(gyroConfig));
+	oisEnabled = ((gyroConfig & oisModeBits) == oisModeBits);
+	if(oisEnabled)
+	{
+		Qmi8658_write_reg(Qmi8658Register_Ctrl3, (gyroConfig & ~oisModeBits));
+	}
+
+	//g_fisDriverHal->waitForEvent(Fis_Int1, FisInt_low);
+	//qst_delay(300);
+
+	Qmi8658_write_reg(Qmi8658Register_Ctrl9, cmd);
+	//g_fisDriverHal->waitForEvent(Fis_Int1, FisInt_high);
+	//qst_delay(300);
+
+	// Check that command has been executed
+	while(((status & QMI8658_STATUS1_CMD_DONE)==0)&&(count<10000))
+	{
+		Qmi8658_read_reg(Qmi8658Register_Status1, &status, sizeof(status));
+		count++;
+	}
+	//assert(status & QMI8658_STATUS1_CMD_DONE);
+
+	//g_fisDriverHal->waitForEvent(Fis_Int1, FisInt_low);
+	//qst_delay(300);
+
+	if(oisEnabled)
+	{
+		// Re-enable OIS mode configuration if necessary		
+		Qmi8658_write_reg(Qmi8658Register_Ctrl3, gyroConfig);
+	}
+}
+
+void Qmi8658_applyAccelerometerOffset(float const* offset, enum Qmi8658_AccUnit unit)
+{
+	const float conversionFactor = (unit == AccUnit_ms2) ? (1 / ONE_G) : 1;
+	writeCalibrationVectorBuffer(offset, conversionFactor, 11);
+	Qmi8658_doCtrl9Command(Ctrl9_SetAccelOffset);
+}
+
+void Qmi8658_applyGyroscopeOffset(float const* offset, enum Qmi8658_GyrUnit unit)
+{
+	const float conversionFactor = (unit == GyrUnit_rads) ? 180 / M_PI : 1;
+	writeCalibrationVectorBuffer(offset, conversionFactor, 6);
+	Qmi8658_doCtrl9Command(Ctrl9_SetGyroOffset);
+}
+
+void Qmi8658_applyOffsetCalibration(struct Qmi8658_offsetCalibration const* cal)
+{
+   Qmi8658_applyAccelerometerOffset(cal->accOffset, cal->accUnit);
+   Qmi8658_applyGyroscopeOffset(cal->gyrOffset, cal->gyrUnit);
+}
+
+// for XKF3
+
+void Qmi8658_enableWakeOnMotion(void)
+{
+	uint8_t womCmd[3];
+	enum Qmi8658_Interrupt interrupt = Fis_Int1;
+	enum Qmi8658_InterruptInitialState initialState = InterruptInitialState_low;
+	enum Qmi8658_WakeOnMotionThreshold threshold = WomThreshold_low;
+	uint8_t blankingTime = 0x00;
+	const uint8_t blankingTimeMask = 0x3F;
+
+	Qmi8658_enableSensors(QMI8658_CTRL7_DISABLE_ALL);
+	Qmi8658_config_acc(AccRange_2g, AccOdr_LowPower_21Hz, Lpf_Disable, St_Disable);
+
+	womCmd[0] = Qmi8658Register_Cal1_L;		//WoM Threshold: absolute value in mg (with 1mg/LSB resolution)
+	womCmd[1] = threshold;
+	womCmd[2] = (uint8_t)interrupt | (uint8_t)initialState | (blankingTime & blankingTimeMask);
+	Qmi8658_write_reg(Qmi8658Register_Cal1_L, womCmd[1]);
+	Qmi8658_write_reg(Qmi8658Register_Cal1_H, womCmd[2]);
+
+	Qmi8658_doCtrl9Command(Ctrl9_ConfigureWakeOnMotion);
+	Qmi8658_enableSensors(QMI8658_CTRL7_ACC_ENABLE);
+	//while(1)
+	//{
+	//	Qmi8658_read_reg(Qmi8658Register_Status1,&womCmd[0],1);
+	//	if(womCmd[0]&0x01)
+	//		break;
+	//}
+}
+
+void Qmi8658_disableWakeOnMotion(void)
+{
+	Qmi8658_enableSensors(QMI8658_CTRL7_DISABLE_ALL);
+	Qmi8658_write_reg(Qmi8658Register_Cal1_L, 0);
+	Qmi8658_doCtrl9Command(Ctrl9_ConfigureWakeOnMotion);
+}
+
+void Qmi8658_enableSensors(uint8_t enableFlags)
+{
+	if(enableFlags & QMI8658_CONFIG_AE_ENABLE)
+	{
+		enableFlags |= QMI8658_CTRL7_ACC_ENABLE | QMI8658_CTRL7_GYR_ENABLE;
+	}
+
+	Qmi8658_write_reg(Qmi8658Register_Ctrl7, enableFlags & QMI8658_CTRL7_ENABLE_MASK);
+}
+
+
+void Qmi8658_Config_apply(struct FisImuConfig const* config)
+{
+	uint8_t fisSensors = config->inputSelection;
+
+	if(fisSensors & QMI8658_CONFIG_AE_ENABLE)
+	{
+		Qmi8658_config_ae(config->aeOdr);
+	}
+	else
+	{
+		if (config->inputSelection & QMI8658_CONFIG_ACC_ENABLE)
+		{
+			Qmi8658_config_acc(config->accRange, config->accOdr, Lpf_Enable, St_Disable);
+		}
+		if (config->inputSelection & QMI8658_CONFIG_GYR_ENABLE)
+		{
+			Qmi8658_config_gyro(config->gyrRange, config->gyrOdr, Lpf_Enable, St_Disable);
+		}
+	}
+
+	if(config->inputSelection & QMI8658_CONFIG_MAG_ENABLE)
+	{
+		Qmi8658_config_mag(config->magDev, config->magOdr);
+	}
+	Qmi8658_enableSensors(fisSensors);	
+}
+
+uint8_t Qmi8658_init(void)
+{
+	uint8_t qmi8658_chip_id = 0x00;
+	uint8_t qmi8658_revision_id = 0x00;
+	uint8_t qmi8658_slave[2] = {FIS210X_SLAVE_ADDR_L, FIS210X_SLAVE_ADDR_H};
+	uint8_t iCount = 0;
+	//uint8_t qmi8658_ctrl1 = 0x00;
+
+	while((qmi8658_chip_id == 0x00)&&(iCount<2))
+	{
+		qmi8658_slave_addr = qmi8658_slave[iCount];
+		Qmi8658_read_reg(Qmi8658Register_WhoAmI, &qmi8658_chip_id, 1);
+		iCount++;
+	}
+	Qmi8658_read_reg(Qmi8658Register_Revision, &qmi8658_revision_id, 1);
+	if(qmi8658_chip_id == 0x05)
+	{
+		qst_printf("Qmi8658_init slave=0x%x  Qmi8658Register_WhoAmI=0x%x 0x%x\n", qmi8658_slave_addr,qmi8658_chip_id,qmi8658_revision_id);
+		Qmi8658_write_reg(Qmi8658Register_Ctrl1, 0x60);
+		qmi8658_config.inputSelection = QMI8658_CONFIG_ACCGYR_ENABLE;//QMI8658_CONFIG_ACCGYR_ENABLE;
+		qmi8658_config.accRange = AccRange_16g;
+		qmi8658_config.accOdr = AccOdr_1000Hz;
+		qmi8658_config.gyrRange = GyrRange_1024dps;		//GyrRange_2048dps   GyrRange_1024dps
+		qmi8658_config.gyrOdr = GyrOdr_1000Hz;
+		qmi8658_config.magOdr = MagOdr_125Hz;
+		qmi8658_config.magDev = MagDev_AKM09918;
+		qmi8658_config.aeOdr = AeOdr_128Hz;
+
+		Qmi8658_Config_apply(&qmi8658_config);
+		if(1)
+		{
+			uint8_t read_data = 0x00;
+			Qmi8658_read_reg(Qmi8658Register_Ctrl1, &read_data, 1);
+			qst_printf("Qmi8658Register_Ctrl1=0x%x \n", read_data);
+			Qmi8658_read_reg(Qmi8658Register_Ctrl2, &read_data, 1);
+			qst_printf("Qmi8658Register_Ctrl2=0x%x \n", read_data);
+			Qmi8658_read_reg(Qmi8658Register_Ctrl3, &read_data, 1);
+			qst_printf("Qmi8658Register_Ctrl3=0x%x \n", read_data);
+			Qmi8658_read_reg(Qmi8658Register_Ctrl4, &read_data, 1);
+			qst_printf("Qmi8658Register_Ctrl4=0x%x \n", read_data);
+			Qmi8658_read_reg(Qmi8658Register_Ctrl5, &read_data, 1);
+			qst_printf("Qmi8658Register_Ctrl5=0x%x \n", read_data);
+			Qmi8658_read_reg(Qmi8658Register_Ctrl6, &read_data, 1);
+			qst_printf("Qmi8658Register_Ctrl6=0x%x \n", read_data);
+			Qmi8658_read_reg(Qmi8658Register_Ctrl7, &read_data, 1);
+			qst_printf("Qmi8658Register_Ctrl7=0x%x \n", read_data);
+		}
+//		Qmi8658_set_layout(2);
+	}
+	else
+	{
+		qst_printf("Qmi8658_init fail\n");
+		qmi8658_chip_id = 0;
+	}
+
+	return qmi8658_chip_id;
+}

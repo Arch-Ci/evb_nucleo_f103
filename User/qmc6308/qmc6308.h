@@ -5,9 +5,9 @@
 #include "qst_sw_i2c.h"
 
 /* vendor chip id*/
-#define QMC6308_IIC_ADDR					(0x2c<<1)		// 6308: (0x2c<<1) 6310: (0x1c<<1)
-#define QMC6310_IIC_ADDR_U				(0x1c<<1)		// 6310U
-#define QMC6310_IIC_ADDR_N				(0x3c<<1)		// 6310N
+#define QMC6308_IIC_ADDR				0x2c		// 6308: (0x2c<<1) 6310: (0x1c<<1)
+#define QMC6310_IIC_ADDR_U				0x1c		// 6310U
+#define QMC6310_IIC_ADDR_N				0x3c		// 6310N
 
 #define QMC6308_CHIP_ID_REG				0x00
 

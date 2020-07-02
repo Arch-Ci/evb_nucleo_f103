@@ -1,33 +1,16 @@
 
-#include "stm32f10x.h"
-#include "stm32f10x_it.h"
-#include "stm32f10x_spi.h"
-#include "bsp_SysTick.h"
-#include "bsp_led.h"
-#include "bsp_usart.h"
-
-#include "bsp_i2c.h"
-#include "qst_sw_i2c.h"
-#include "bsp_spi.h"
-#include "bsp_flash.h"
 #include "stm32f10x_user.h"
-
 #include <math.h>
 
-
-//#define QST_IMU_ANO_TC
 //#define QST_CALI_STORE
 
-#define QST_EVB_DEMO_ACC
+//#define QST_EVB_DEMO_ACC
 //#define QST_EVB_DEMO_PRESS
-//#define QST_EVB_DEMO_9AXIS
+#define QST_EVB_DEMO_9AXIS
 
 #define QST_PRINTF					printf
 
 static qst_evb_t g_evb;
-#if defined(QST_IMU_ANO_TC)
-static qst_ano_tc_t g_ano;
-#endif
 #if defined(QST_EVB_DEMO_PRESS)
 static qmp6988_data qmp6988;
 #endif
@@ -345,7 +328,6 @@ static void evb_setup_irq(void)
 }
 
 // clock
-#if 1
 static void SYSCLK_Config_WakeUp(void)
 {
 #if defined(SYSCLK_USE_HSI)
@@ -387,40 +369,46 @@ static void SYSCLK_Config_WakeUp(void)
 	}
 #endif
 }
-#endif
 // clock
 
 
 static void evb_exe_rx_buf(void)
 {
+	unsigned char *rx_buf;
+	unsigned short len;
+
+	if(bsp_uart_get_rx_buf(&rx_buf, &len))
+	{
+		if((rx_buf[0]=='s')&&(rx_buf[1]=='l')&&(rx_buf[2]=='e')&&(rx_buf[3]=='e')&&(rx_buf[4]=='p'))
+		{
+#if defined(QST_EVB_DEMO_ACC)		
+			if(g_evb.accel == QST_ACCEL_QMAX981)
+			{
+				qmaX981_writereg(0x11, 0x00);
+			}
+			else if(g_evb.accel == QST_ACCEL_QMA6100)
+			{
+				qma6100_writereg(0x11, 0x00);
+			}
+			QST_PRINTF("accel sleep\n");
+#endif
+		}
+		else if((rx_buf[0]=='w')&&(rx_buf[1]=='a')&&(rx_buf[2]=='k')&&(rx_buf[3]=='e'))
+		{
+#if defined(QST_EVB_DEMO_ACC)		
+			if(g_evb.accel == QST_ACCEL_QMAX981)
+			{
+				qmaX981_writereg(0x11, 0x80);
+			}
+			else if(g_evb.accel == QST_ACCEL_QMA6100)
+			{
+				qma6100_writereg(0x11, 0x80);
+			}
+			QST_PRINTF("accel wake\n");
+#endif
+		}
 		bsp_uart_rx_reset();
-}
-
-typedef struct plotsim
-{
-	short head;
-	short len;
-	short buf[3];
-} plotsim_t;
-
-static plotsim_t g_plotsim;
-
-void qst_evb_plotsim(int x, int y, int z)
-{
-
-	int pktSize;
-
-	g_plotsim.head = 0xCDAB;             //SimPlot packet header. Indicates start of data packet
-	g_plotsim.len = 4*sizeof(plotsim_t);      //Size of data in bytes. Does not include the header and size fields
-	g_plotsim.buf[0] = (short)x;
-	g_plotsim.buf[1] = (short)y;
-	g_plotsim.buf[2] = (short)z;
-	//g_plotsim.buf[3] = z;
-
-	pktSize = sizeof(plotsim_t); //Header bytes + size field bytes + data
-	//IMPORTANT: Change to serial port that is connected to PC
-	//Serial.write((uint8_t * )buffer, pktSize);	
-	qst_send_str((unsigned char *)g_plotsim.buf, pktSize);
+	}
 }
 
 
@@ -480,6 +468,31 @@ void qst_evb_acc_read(void)
 	QST_PRINTF("%f	%f	%f\r\n", g_evb.out.x1, g_evb.out.y1, g_evb.out.z1);
 }
 
+void qst_evb_acc_drdy(void)
+{
+	int raw[3];
+#if defined(QMAX981_INT_LATCH)||defined(QMA6100_INT_LATCH)
+	unsigned char databuf[4];
+#endif
+
+	if(g_evb.accel == QST_ACCEL_QMAX981)
+	{
+		qmaX981_read_raw(raw);
+	#if defined(QMAX981_INT_LATCH)
+		qmaX981_readreg(0x09, databuf, 4);
+	#endif
+	}
+	else if(g_evb.accel == QST_ACCEL_QMA6100)
+	{
+		qma6100_read_raw_xyz(raw);
+#if defined(QMA6100_INT_LATCH)
+		qma6100_readreg(0x09, databuf, 4);
+#endif
+	}
+
+	QMAX981_LOG("drdy	%d	%d	%d\n", raw[0], raw[1], raw[2]);
+}
+
 void qst_evb_acc_irq1(void)
 {
 	int ret = 0;
@@ -487,15 +500,6 @@ void qst_evb_acc_irq1(void)
 
 	if(g_evb.accel == QST_ACCEL_QMAX981)
 	{
-#if defined(QMAX981_DATA_READY)
-		if(1)	//(databuf[2]&0x10)
-		{
-			int raw[3];
-			qmaX981_read_raw(raw);
-			QMAX981_LOG("drdy	%d	%d	%d\n", raw[0], raw[1], raw[2]);
-			return;
-		}
-#endif
 		ret = qmaX981_readreg(0x09, databuf, 4);
 		if(ret != QMAX981_SUCCESS)
 		{
@@ -522,6 +526,16 @@ void qst_evb_acc_irq1(void)
 			QST_PRINTF("FIFO WMK\n");
 			qmaX981_read_fifo(qmaX981_get_fifo());
 			qmaX981_exe_fifo(qmaX981_get_fifo());
+		}
+#endif
+#if defined(QMAX981_HAND_RAISE_DOWN)
+		if(databuf[1]&0x02)
+		{
+			QST_PRINTF("HAND RAISE\n");
+		}
+		if(databuf[1]&0x04)
+		{
+			QST_PRINTF("HAND DOWN\n");
 		}
 #endif
 	}
@@ -608,8 +622,8 @@ void qst_evb_acc_tim2(void)
 		g_evb.out.step = qmaX981_read_stepcounter();
 #endif
 	}
-	//QST_PRINTF("%f	%f	%f\r\n", g_evb.out.x1, g_evb.out.y1, g_evb.out.z1);
-	qst_evb_plotsim((int)g_evb.out.x1*1000/9.807, (int)g_evb.out.y1*1000/9.807, (int)g_evb.out.z1*1000/9.807);
+	QST_PRINTF("%f	%f	%f\r\n", g_evb.out.x1, g_evb.out.y1, g_evb.out.z1);
+	//qst_evb_plotsscom((int)g_evb.out.x1*1000/9.807, (int)g_evb.out.y1*1000/9.807, (int)g_evb.out.z1*1000/9.807);
 }
 
 void qst_evb_acc_algo_step(void)
@@ -634,21 +648,24 @@ void qst_evb_demo_acc(void)
 	g_evb.out.sensor = QST_SENSOR_ACCEL;
 	g_evb.report_mode = QST_REPORT_POLLING;
 
+	evb_setup_irq();	
+	g_evb.irq1_func = qst_evb_acc_irq1;
+
 	if(g_evb.report_mode & QST_REPORT_DRI)
 	{
-		evb_setup_irq();	
-		g_evb.irq1_func = qst_evb_acc_irq1;
+		g_evb.irq1_func = qst_evb_acc_drdy;		
 	}
-	if(g_evb.report_mode & QST_REPORT_POLLING)
+	else if(g_evb.report_mode & QST_REPORT_POLLING)
 	{
 		SysTick_Enable(0);
-		evb_setup_timer(TIM2, 20, ENABLE);
+		evb_setup_timer(TIM2, 100, ENABLE);
 		g_evb.tim2_func = qst_evb_acc_tim2;
 	}
 
 	while(1)
 	{
 		evb_irq_handle();
+		evb_exe_rx_buf();
 	}
 }
 #endif
@@ -865,20 +882,8 @@ void qst_evb_mag_cali(void)
 
 void qst_evb_send_msg(void)
 {
-	//return;
 #if defined(QST_IMU_ANO_TC)
-	g_ano.acc_raw[0] = (short)(g_evb.imu.data1[0]*1000.0f);
-	g_ano.acc_raw[1] = (short)(g_evb.imu.data1[1]*1000.0f);
-	g_ano.acc_raw[2] = (short)(g_evb.imu.data1[2]*1000.0f);
-	g_ano.gyr_raw[0] = (short)(g_evb.imu.data2[0]*57.2957796f);
-	g_ano.gyr_raw[1] = (short)(g_evb.imu.data2[1]*57.2957796f);
-	g_ano.gyr_raw[2] = (short)(g_evb.imu.data2[2]*57.2957796f);
-	g_ano.mag_raw[0] = (short)g_evb.out.data1[0];
-	g_ano.mag_raw[1] = (short)g_evb.out.data1[1];
-	g_ano.mag_raw[2] = (short)g_evb.out.data1[2];
-	qst_send_imu_euler(euler[0], euler[1], euler[2], 0, 0x01, 1);
-	qst_send_imu_rawdata(g_ano.gyr_raw, g_ano.acc_raw, g_ano.mag_raw);
-	//qst_send_imu_rawdata2((int)(g_evb.qmp6988_1.pressure*100), 0);
+	qst_send_imu_data(euler, g_evb.imu.data2, g_evb.imu.data1, g_evb.out.data1, 0);
 #else
 	QST_PRINTF("%d	%d	%d\n", (int)euler[0],(int)euler[1],(int)euler[2]);
 	//QST_PRINTF("%f	%f	%f	%f	%f	%f\n", g_evb.imu.data1[0],g_evb.imu.data1[1],g_evb.imu.data1[2],g_evb.imu.data2[0],g_evb.imu.data2[1],g_evb.imu.data2[2]);
@@ -889,6 +894,8 @@ void qst_evb_send_msg(void)
 void qst_evb_demo_9axis(void)
 {
 	QST_PRINTF("qst_evb_demo_9axis \n");
+	g_evb.out.sensor = QST_SENSOR_MAG;
+	g_evb.imu.sensor = QST_SENSOR_ACCGYRO;
 	g_evb.report_mode = QST_REPORT_DRI;
 	qst_algo_imu_init();
 	if(g_evb.accgyro)
@@ -916,10 +923,27 @@ void qst_evb_demo_9axis(void)
 	}
 }
 
+
+void qst_evb_mag_tim2(void)
+{
+	qmc6308_read_mag_xyz(g_evb.out.data1);
+	QST_PRINTF("mag:%f	%f	%f\n",g_evb.out.data1[0],g_evb.out.data1[1],g_evb.out.data1[2]);
+}
+
 void qst_evb_demo_mag(void)
 {
+	g_evb.out.sensor = QST_SENSOR_MAG;
+	g_evb.imu.sensor = QST_SENSOR_ACCGYRO;
+	g_evb.report_mode = QST_REPORT_POLLING;
+
+	SysTick_Enable(0);
+	evb_setup_timer(TIM2, 50, ENABLE);
+	g_evb.tim2_func = qst_evb_mag_tim2;
+
 	while(1)
 	{
+		evb_irq_handle();
+		evb_exe_rx_buf();
 	}
 }
 
@@ -949,10 +973,8 @@ int main(void)
 	//Spi_Init(0);
 	Spi_Init(3);
 #endif
-
 	//RTC_NVIC_Config();
 	//RTC_CheckAndConfig(&systmtime);
-
 	memset(&g_evb, 0, sizeof(g_evb));
 
 #if defined(QST_EVB_DEMO_ACC)

@@ -29,9 +29,9 @@ static uint8_t qmc6308_read_block(uint8_t addr, uint8_t *data, uint8_t len)
 	while((!ret) && (retry++ < 5))
 	{
 #if defined(QST_USE_SW_I2C)
-		ret = qst_sw_readreg(qmc6308_addr, addr, data, len);
+		ret = qst_sw_readreg(qmc6308_addr<<1, addr, data, len);
 #else
-		ret = I2C_BufferRead(qmc6308_addr, addr, data, len);
+		ret = I2C_BufferRead(qmc6308_addr<<1, addr, data, len);
 #endif
 	}
 
@@ -46,9 +46,9 @@ static uint8_t qmc6308_write_reg(uint8_t addr, uint8_t data)
 	while((!ret) && (retry++ < 5))
 	{
 #if defined(QST_USE_SW_I2C)
-		ret = qst_sw_writereg(qmc6308_addr, addr, data);
+		ret = qst_sw_writereg(qmc6308_addr<<1, addr, data);
 #else
-		ret = I2C_ByteWrite(qmc6308_addr, addr, data); 
+		ret = I2C_ByteWrite(qmc6308_addr<<1, addr, data); 
 #endif
 	}
 

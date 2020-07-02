@@ -1,5 +1,6 @@
 #ifndef QMI8610_H
 #define QMI8610_H
+
 #include "stm32f10x.h"
 #include "bsp_usart.h"
 #include "bsp_i2c.h"
@@ -15,20 +16,20 @@
 
 //#define QMI8610_USE_FIFO
 
-#define QMI8610_CTRL7_DISABLE_ALL		(0x0)
+#define QMI8610_CTRL7_DISABLE_ALL			(0x0)
 #define QMI8610_CTRL7_ACC_ENABLE			(0x1)
 #define QMI8610_CTRL7_GYR_ENABLE			(0x2)
 #define QMI8610_CTRL7_MAG_ENABLE			(0x4)
-#define QMI8610_CTRL7_AE_ENABLE			(0x8)
-#define QMI8610_CTRL7_ENABLE_MASK		(0xF)
+#define QMI8610_CTRL7_AE_ENABLE				(0x8)
+#define QMI8610_CTRL7_ENABLE_MASK			(0xF)
 
-#define QMI8610_CONFIG_ACC_ENABLE		QMI8610_CTRL7_ACC_ENABLE
-#define QMI8610_CONFIG_GYR_ENABLE		QMI8610_CTRL7_GYR_ENABLE
-#define QMI8610_CONFIG_MAG_ENABLE		QMI8610_CTRL7_MAG_ENABLE
+#define QMI8610_CONFIG_ACC_ENABLE			QMI8610_CTRL7_ACC_ENABLE
+#define QMI8610_CONFIG_GYR_ENABLE			QMI8610_CTRL7_GYR_ENABLE
+#define QMI8610_CONFIG_MAG_ENABLE			QMI8610_CTRL7_MAG_ENABLE
 #define QMI8610_CONFIG_AE_ENABLE			QMI8610_CTRL7_AE_ENABLE
 #define QMI8610_CONFIG_ACCGYR_ENABLE		(QMI8610_CONFIG_ACC_ENABLE | QMI8610_CONFIG_GYR_ENABLE)
-#define QMI8610_CONFIG_ACCGYRMAG_ENABLE	(QMI8610_CONFIG_ACC_ENABLE | QMI8610_CONFIG_GYR_ENABLE | QMI8610_CONFIG_MAG_ENABLE)
-#define QMI8610_CONFIG_AEMAG_ENABLE		(QMI8610_CONFIG_AE_ENABLE | QMI8610_CONFIG_MAG_ENABLE)
+#define QMI8610_CONFIG_ACCGYRMAG_ENABLE		(QMI8610_CONFIG_ACC_ENABLE | QMI8610_CONFIG_GYR_ENABLE | QMI8610_CONFIG_MAG_ENABLE)
+#define QMI8610_CONFIG_AEMAG_ENABLE			(QMI8610_CONFIG_AE_ENABLE | QMI8610_CONFIG_MAG_ENABLE)
 
 #define QMI8610_STATUS1_CMD_DONE			(0x01)
 #define QMI8610_STATUS1_WAKEUP_EVENT		(0x04)
@@ -218,47 +219,47 @@ enum qmi8610_FifoMode
 
 enum qmi8610_LpfConfig
 {
-	Lpf_Disable, /*!< \brief Disable low pass filter. */
-	Lpf_Enable   /*!< \brief Enable low pass filter. */
+	Qmi8610Lpf_Disable, /*!< \brief Disable low pass filter. */
+	Qmi8610Lpf_Enable   /*!< \brief Enable low pass filter. */
 };
 
 enum qmi8610_HpfConfig
 {
-	Hpf_Disable, /*!< \brief Disable high pass filter. */
-	Hpf_Enable   /*!< \brief Enable high pass filter. */
+	Qmi8610Hpf_Disable, /*!< \brief Disable high pass filter. */
+	Qmi8610Hpf_Enable   /*!< \brief Enable high pass filter. */
 };
 
 enum qmi8610_AccRange
 {
-	AccRange_2g = 0 << 3, /*!< \brief +/- 2g range */
-	AccRange_4g = 1 << 3, /*!< \brief +/- 4g range */
-	AccRange_8g = 2 << 3, /*!< \brief +/- 8g range */
-	AccRange_16g = 3 << 3 /*!< \brief +/- 16g range */
+	Qmi8610AccRange_2g = 0 << 3, /*!< \brief +/- 2g range */
+	Qmi8610AccRange_4g = 1 << 3, /*!< \brief +/- 4g range */
+	Qmi8610AccRange_8g = 2 << 3, /*!< \brief +/- 8g range */
+	Qmi8610AccRange_16g = 3 << 3 /*!< \brief +/- 16g range */
 };
 
 
 enum qmi8610_AccOdr
 {
-	AccOdr_1024Hz = 0,  /*!< \brief High resolution 1024Hz output rate. */
-	AccOdr_256Hz = 1, /*!< \brief High resolution 256Hz output rate. */
-	AccOdr_128Hz = 2, /*!< \brief High resolution 128Hz output rate. */
-	AccOdr_32Hz = 3,  /*!< \brief High resolution 32Hz output rate. */
-	AccOdr_LowPower_128Hz = 4, /*!< \brief Low power 128Hz output rate. */
-	AccOdr_LowPower_64Hz = 5,  /*!< \brief Low power 64Hz output rate. */
-	AccOdr_LowPower_25Hz = 6,  /*!< \brief Low power 25Hz output rate. */
-	AccOdr_LowPower_3Hz = 7    /*!< \brief Low power 3Hz output rate. */
+	Qmi8610AccOdr_1024Hz = 0,  /*!< \brief High resolution 1024Hz output rate. */
+	Qmi8610AccOdr_256Hz = 1, /*!< \brief High resolution 256Hz output rate. */
+	Qmi8610AccOdr_128Hz = 2, /*!< \brief High resolution 128Hz output rate. */
+	Qmi8610AccOdr_32Hz = 3,  /*!< \brief High resolution 32Hz output rate. */
+	Qmi8610AccOdr_LowPower_128Hz = 4, /*!< \brief Low power 128Hz output rate. */
+	Qmi8610AccOdr_LowPower_64Hz = 5,  /*!< \brief Low power 64Hz output rate. */
+	Qmi8610AccOdr_LowPower_25Hz = 6,  /*!< \brief Low power 25Hz output rate. */
+	Qmi8610AccOdr_LowPower_3Hz = 7    /*!< \brief Low power 3Hz output rate. */
 };
 
 enum qmi8610_GyrRange
 {
-	GyrRange_32dps = 0 << 3,   /*!< \brief +-32 degrees per second. */
-	GyrRange_64dps = 1 << 3,   /*!< \brief +-64 degrees per second. */
-	GyrRange_128dps = 2 << 3,  /*!< \brief +-128 degrees per second. */
-	GyrRange_256dps = 3 << 3,  /*!< \brief +-256 degrees per second. */
-	GyrRange_512dps = 4 << 3,  /*!< \brief +-512 degrees per second. */
-	GyrRange_1024dps = 5 << 3, /*!< \brief +-1024 degrees per second. */
-	GyrRange_2048dps = 6 << 3, /*!< \brief +-2048 degrees per second. */
-	GyrRange_2560dps = 7 << 3  /*!< \brief +-2560 degrees per second. */
+	Qmi8610GyrRange_32dps = 0 << 3,   /*!< \brief +-32 degrees per second. */
+	Qmi8610GyrRange_64dps = 1 << 3,   /*!< \brief +-64 degrees per second. */
+	Qmi8610GyrRange_128dps = 2 << 3,  /*!< \brief +-128 degrees per second. */
+	Qmi8610GyrRange_256dps = 3 << 3,  /*!< \brief +-256 degrees per second. */
+	Qmi8610GyrRange_512dps = 4 << 3,  /*!< \brief +-512 degrees per second. */
+	Qmi8610GyrRange_1024dps = 5 << 3, /*!< \brief +-1024 degrees per second. */
+	Qmi8610GyrRange_2048dps = 6 << 3, /*!< \brief +-2048 degrees per second. */
+	Qmi8610GyrRange_2560dps = 7 << 3  /*!< \brief +-2560 degrees per second. */
 };
 
 /*!
@@ -266,23 +267,23 @@ enum qmi8610_GyrRange
  */
 enum qmi8610_GyrOdr
 {
-	GyrOdr_1024Hz			= 0,	/*!< \brief High resolution 1024Hz output rate. */
-	GyrOdr_256Hz			= 1,	/*!< \brief High resolution 256Hz output rate. */
-	GyrOdr_128Hz			= 2,	/*!< \brief High resolution 128Hz output rate. */
-	GyrOdr_32Hz				= 3,	/*!< \brief High resolution 32Hz output rate. */
-	GyrOdr_OIS_8192Hz		= 6,	/*!< \brief OIS Mode 8192Hz output rate. */
-	GyrOdr_OIS_LL_8192Hz	= 7		/*!< \brief OIS LL Mode 8192Hz output rate. */
+	Qmi8610GyrOdr_1024Hz			= 0,	/*!< \brief High resolution 1024Hz output rate. */
+	Qmi8610GyrOdr_256Hz			= 1,	/*!< \brief High resolution 256Hz output rate. */
+	Qmi8610GyrOdr_128Hz			= 2,	/*!< \brief High resolution 128Hz output rate. */
+	Qmi8610GyrOdr_32Hz				= 3,	/*!< \brief High resolution 32Hz output rate. */
+	Qmi8610GyrOdr_OIS_8192Hz		= 6,	/*!< \brief OIS Mode 8192Hz output rate. */
+	Qmi8610GyrOdr_OIS_LL_8192Hz	= 7		/*!< \brief OIS LL Mode 8192Hz output rate. */
 };
 
 enum qmi8610_AeOdr
 {
-	AeOdr_1Hz = 0,  /*!< \brief 1Hz output rate. */
-	AeOdr_2Hz = 1,  /*!< \brief 2Hz output rate. */
-	AeOdr_4Hz = 2,  /*!< \brief 4Hz output rate. */
-	AeOdr_8Hz = 3,  /*!< \brief 8Hz output rate. */
-	AeOdr_16Hz = 4, /*!< \brief 16Hz output rate. */
-	AeOdr_32Hz = 5, /*!< \brief 32Hz output rate. */
-	AeOdr_64Hz = 6,  /*!< \brief 64Hz output rate. */
+	Qmi8610AeOdr_1Hz = 0,  /*!< \brief 1Hz output rate. */
+	Qmi8610AeOdr_2Hz = 1,  /*!< \brief 2Hz output rate. */
+	Qmi8610AeOdr_4Hz = 2,  /*!< \brief 4Hz output rate. */
+	Qmi8610AeOdr_8Hz = 3,  /*!< \brief 8Hz output rate. */
+	Qmi8610AeOdr_16Hz = 4, /*!< \brief 16Hz output rate. */
+	Qmi8610AeOdr_32Hz = 5, /*!< \brief 32Hz output rate. */
+	Qmi8610AeOdr_64Hz = 6,  /*!< \brief 64Hz output rate. */
 	/*!
 	 * \brief Motion on demand mode.
 	 *
@@ -300,7 +301,7 @@ enum qmi8610_AeOdr
 
 enum qmi8610_MagOdr
 {
-	MagOdr_32Hz = 2   /*!< \brief 32Hz output rate. */
+	Qmi8610MagOdr_32Hz = 2   /*!< \brief 32Hz output rate. */
 };
 	
 enum qmi8610_MagDev
@@ -311,20 +312,20 @@ enum qmi8610_MagDev
 
 enum qmi8610_AccUnit
 {
-	AccUnit_g,  /*!< \brief Accelerometer output in terms of g (9.81m/s^2). */
-	AccUnit_ms2 /*!< \brief Accelerometer output in terms of m/s^2. */
+	Qmi8610AccUnit_g,  /*!< \brief Accelerometer output in terms of g (9.81m/s^2). */
+	Qmi8610AccUnit_ms2 /*!< \brief Accelerometer output in terms of m/s^2. */
 };
 
 enum qmi8610_GyrUnit
 {
-	GyrUnit_dps, /*!< \brief Gyroscope output in degrees/s. */
-	GyrUnit_rads /*!< \brief Gyroscope output in rad/s. */
+	Qmi8610GyrUnit_dps, /*!< \brief Gyroscope output in degrees/s. */
+	Qmi8610GyrUnit_rads /*!< \brief Gyroscope output in rad/s. */
 };
 
-struct FisImuConfig
+struct Qmi8610Config
 {
 	/*! \brief Sensor fusion input selection. */
-	uint8_t inputSelection;
+	unsigned char inputSelection;
 	/*! \brief Accelerometer dynamic range configuration. */
 	enum qmi8610_AccRange accRange;
 	/*! \brief Accelerometer output rate. */
@@ -354,41 +355,41 @@ struct FisImuConfig
 };
 
 
-#define QMI8610_SAMPLE_SIZE (3 * sizeof(int16_t))
-#define QMI8610_AE_SAMPLE_SIZE ((4+3+1) * sizeof(int16_t) + sizeof(uint8_t))
+#define QMI8610_SAMPLE_SIZE (3 * sizeof(short))
+#define QMI8610_AE_SAMPLE_SIZE ((4+3+1) * sizeof(short) + sizeof(unsigned char))
 struct Qmi8610RawSample
 {
 	/*! \brief The sample counter of the sample. */
-	uint8_t sampleCounter;
+	unsigned char sampleCounter;
 	/*!
 	 * \brief Pointer to accelerometer data in the sample buffer.
 	 *
 	 * \c NULL if no accelerometer data is available in the buffer.
 	 */
-	uint8_t const* accelerometerData;
+	unsigned char const* accelerometerData;
 	/*!
 	 * \brief Pointer to gyroscope data in the sample buffer.
 	 *
 	 * \c NULL if no gyroscope data is available in the buffer.
 	 */
-	uint8_t const* gyroscopeData;
+	unsigned char const* gyroscopeData;
 	/*!
 	 * \brief Pointer to magnetometer data in the sample buffer.
 	 *
 	 * \c NULL if no magnetometer data is available in the buffer.
 	 */
-	uint8_t const* magnetometerData;
+	unsigned char const* magnetometerData;
 	/*!
 	 * \brief Pointer to AttitudeEngine data in the sample buffer.
 	 *
 	 * \c NULL if no AttitudeEngine data is available in the buffer.
 	 */
-	uint8_t const* attitudeEngineData;
+	unsigned char const* attitudeEngineData;
 	/*! \brief Raw sample buffer. */
-	uint8_t sampleBuffer[QMI8610_SAMPLE_SIZE + QMI8610_AE_SAMPLE_SIZE];
+	unsigned char sampleBuffer[QMI8610_SAMPLE_SIZE + QMI8610_AE_SAMPLE_SIZE];
 	/*! \brief Contents of the FIS status 1 register. */
-	uint8_t status1;
-	//uint8_t status0;
+	unsigned char status1;
+	//unsigned char status0;
 	//uint32_t durT;
 };
 
@@ -409,9 +410,9 @@ struct qmi8610_sensitivityCalibration
 enum qmi8610_Interrupt
 {
 	/*! \brief FIS INT1 line. */
-	Fis_Int1 = (0 << 6),
+	Qmi8610_Int1 = (0 << 6),
 	/*! \brief FIS INT2 line. */
-	Fis_Int2 = (1 << 6)
+	Qmi8610_Int2 = (1 << 6)
 };
 
 enum qmi8610_InterruptInitialState
@@ -427,33 +428,31 @@ enum qmi8610_WakeOnMotionThreshold
 };
 
 
-extern uint8_t qmi8610_write_reg(uint8_t reg, uint8_t value);
-extern uint8_t qmi8610_read_reg(uint8_t reg, uint8_t* buf, uint16_t len);
-extern uint8_t qmi8610_init(void);
-extern void qmi8610_Config_apply(struct FisImuConfig const* config);
-extern void qmi8610_enableSensors(uint8_t enableFlags);
+extern unsigned char qmi8610_write_reg(unsigned char reg, unsigned char value);
+extern unsigned char qmi8610_read_reg(unsigned char reg, unsigned char* buf, unsigned short len);
+extern unsigned char qmi8610_init(void);
+extern void qmi8610_Config_apply(struct Qmi8610Config const* config);
+extern void qmi8610_enableSensors(unsigned char enableFlags);
 extern void qmi8610_read_acc_xyz(float acc_xyz[3]);
 extern void qmi8610_read_gyro_xyz(float gyro_xyz[3]);
 extern void qmi8610_read_xyz(float acc[3], float gyro[3], unsigned char *tim_count);
 extern void qmi8610_read_xyz_raw(short raw_acc_xyz[3], short raw_gyro_xyz[3], unsigned char *tim_count);
-extern uint8_t qmi8610_readStatus0(void);
-extern uint8_t qmi8610_readStatus1(void);
-extern int8_t qmi8610_readTemp(void);
+extern unsigned char qmi8610_readStatus0(void);
+extern unsigned char qmi8610_readStatus1(void);
+extern char qmi8610_readTemp(void);
 extern void qmi8610_enableWakeOnMotion(void);
 extern void qmi8610_disableWakeOnMotion(void);
 
-extern uint16_t qmi8610_configureFifo(enum qmi8610_FifoWatermarkLevel watermark, enum qmi8610_FifoSize size, enum qmi8610_FifoMode mode);
+extern unsigned short qmi8610_configureFifo(enum qmi8610_FifoWatermarkLevel watermark, enum qmi8610_FifoSize size, enum qmi8610_FifoMode mode);
 #if defined(QMI8610_USE_FIFO)
-extern void qmi8610_readFifo(uint8_t* data, uint16_t dataLength);
+extern void qmi8610_readFifo(unsigned char* data, unsigned short dataLength);
 extern void qmi8610_read_fifo(void);
 #endif
 // for XKF3
-extern void qmi8610_processAccelerometerData(uint8_t const* rawData, float* calibratedData);
-extern void qmi8610_processGyroscopeData(uint8_t const* rawData, float* calibratedData);
+extern void qmi8610_processAccelerometerData(unsigned char const* rawData, float* calibratedData);
+extern void qmi8610_processGyroscopeData(unsigned char const* rawData, float* calibratedData);
 extern void qmi8610_read_rawsample(struct Qmi8610RawSample *sample);
 extern void qmi8610_applyOffsetCalibration(struct qmi8610_offsetCalibration const* cal);
 // for XKF3
-extern uint16_t acc_lsb_div;
-extern uint16_t gyro_lsb_div;
-// fis210x
 #endif
+

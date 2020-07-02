@@ -832,7 +832,7 @@ void qma6100_hand_raise_down(qs32 int_map, qs32 enable)
 		qma6100_writereg(0x16, reg_16);
 		if(int_map == QMA6100_MAP_INT1)
 			qma6100_writereg(0x19, reg_19);
-		else if(int_map == QMA6100_MAP_INT1)
+		else if(int_map == QMA6100_MAP_INT2)
 			qma6100_writereg(0x1b, reg_1b);
 	}
 	else

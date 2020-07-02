@@ -14,16 +14,19 @@
 #include <string.h>
 #include <stdio.h>
 
-typedef		char					qs8;
-typedef		unsigned char			qu8;
-typedef		short					qs16;
+#ifndef QST_BASE_TYPE
+#define QST_BASE_TYPE
+typedef		signed char					qs8;
+typedef		unsigned char				qu8;
+typedef		short								qs16;
 typedef		unsigned short			qu16;
-typedef		int						qs32;
-typedef		unsigned int			qu32;
-typedef		long long				qs64;
+typedef		int									qs32;
+typedef		unsigned int				qu32;
+typedef		long long						qs64;
 typedef		unsigned long long		qu64;
-typedef		float					qf32;
-typedef		double					qd64;
+typedef		float								qf32;
+typedef		double							qd64;
+#endif
 
 #define QMAX981_LOG					printf
 #define QMAX981_ERR					printf
@@ -38,6 +41,7 @@ typedef		double					qd64;
 //#define QMAX981_ANY_MOTION
 //#define QMAX981_NO_MOTION
 //#define QMAX981_SIGNIFICANT_MOTION
+//#define QMAX981_HAND_RAISE_DOWN
 #define QMAX981_INT_LATCH
 
 #define QMA7981_DEVICE_ID		    0xe7
@@ -160,6 +164,9 @@ extern qu32 qmaX981_read_stepcounter(void);
 #if defined(QMAX981_FIFO_FUNC)
 extern qs32 qmaX981_read_fifo(qu8 *fifo_buf);
 extern qu8* qmaX981_get_fifo(void);
+#endif
+#if defined(QMAX981_HAND_RAISE_DOWN)
+extern void qmaX981_hand_raise_down(qs32 layout, qs32 int_map, qs32 enable);
 #endif
 extern void qmaX981_irq_hdlr(void);
 

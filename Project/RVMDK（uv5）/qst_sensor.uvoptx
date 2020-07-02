@@ -152,75 +152,55 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>848</LineNumber>
+          <LineNumber>401</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134227450</Address>
+          <Address>134226052</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>D:\code\stm32\evb-mcu\evb_stm32f103_step\Project\User\main.c</Filename>
+          <Filename>E:\work\stm32\github\evb_nucleo_f103\Project\User\main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\qst_evb\../../User/main.c\848</Expression>
+          <Expression>\\qst_evb\../../User/main.c\401</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>raw_acc_xyz,0x0A</ItemText>
+          <ItemText>rx_buf[0]</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>raw_gyro_xyz,0x0A</ItemText>
+          <ItemText>rx_buf[1]</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>g_out</ItemText>
+          <ItemText>rx_buf[2]</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>accel_ahrs[0]</ItemText>
+          <ItemText>rx_buf[3]</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>accel_ahrs[1]</ItemText>
+          <ItemText>rx_buf[4]</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>accel_ahrs[2]</ItemText>
+          <ItemText>rx_buf[5]</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>gyro_ahrs[0]</ItemText>
-        </Ww>
-        <Ww>
-          <count>7</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>gyro_ahrs[1]</ItemText>
-        </Ww>
-        <Ww>
-          <count>8</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>gyro_ahrs[2]</ItemText>
-        </Ww>
-        <Ww>
-          <count>9</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>rx_buf</ItemText>
-        </Ww>
-        <Ww>
-          <count>10</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>SystemCoreClock,0x0A</ItemText>
+          <ItemText>strlen("accle")</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -657,7 +637,7 @@
 
   <Group>
     <GroupName>USER</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -665,7 +645,7 @@
       <GroupNumber>4</GroupNumber>
       <FileNumber>30</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\User\main.c</PathWithFileName>

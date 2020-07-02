@@ -1,5 +1,6 @@
 #ifndef QMI8658_H
 #define QMI8658_H
+
 #include "stm32f10x.h"
 #include "bsp_usart.h"
 #include "bsp_i2c.h"
@@ -13,21 +14,21 @@
 #define ONE_G	(9.807f)
 #endif
 
-#define QMI8658_CTRL7_DISABLE_ALL		(0x0)
+#define QMI8658_CTRL7_DISABLE_ALL			(0x0)
 #define QMI8658_CTRL7_ACC_ENABLE			(0x1)
 #define QMI8658_CTRL7_GYR_ENABLE			(0x2)
 #define QMI8658_CTRL7_MAG_ENABLE			(0x4)
-#define QMI8658_CTRL7_AE_ENABLE			(0x8)
-#define QMI8658_CTRL7_GYR_SNOOZE_ENABLE	(0x10)
-#define QMI8658_CTRL7_ENABLE_MASK		(0xF)
+#define QMI8658_CTRL7_AE_ENABLE				(0x8)
+#define QMI8658_CTRL7_GYR_SNOOZE_ENABLE		(0x10)
+#define QMI8658_CTRL7_ENABLE_MASK			(0xF)
 
-#define QMI8658_CONFIG_ACC_ENABLE		QMI8658_CTRL7_ACC_ENABLE
-#define QMI8658_CONFIG_GYR_ENABLE		QMI8658_CTRL7_GYR_ENABLE
-#define QMI8658_CONFIG_MAG_ENABLE		QMI8658_CTRL7_MAG_ENABLE
+#define QMI8658_CONFIG_ACC_ENABLE			QMI8658_CTRL7_ACC_ENABLE
+#define QMI8658_CONFIG_GYR_ENABLE			QMI8658_CTRL7_GYR_ENABLE
+#define QMI8658_CONFIG_MAG_ENABLE			QMI8658_CTRL7_MAG_ENABLE
 #define QMI8658_CONFIG_AE_ENABLE			QMI8658_CTRL7_AE_ENABLE
 #define QMI8658_CONFIG_ACCGYR_ENABLE		(QMI8658_CONFIG_ACC_ENABLE | QMI8658_CONFIG_GYR_ENABLE)
-#define QMI8658_CONFIG_ACCGYRMAG_ENABLE	(QMI8658_CONFIG_ACC_ENABLE | QMI8658_CONFIG_GYR_ENABLE | QMI8658_CONFIG_MAG_ENABLE)
-#define QMI8658_CONFIG_AEMAG_ENABLE		(QMI8658_CONFIG_AE_ENABLE | QMI8658_CONFIG_MAG_ENABLE)
+#define QMI8658_CONFIG_ACCGYRMAG_ENABLE		(QMI8658_CONFIG_ACC_ENABLE | QMI8658_CONFIG_GYR_ENABLE | QMI8658_CONFIG_MAG_ENABLE)
+#define QMI8658_CONFIG_AEMAG_ENABLE			(QMI8658_CONFIG_AE_ENABLE | QMI8658_CONFIG_MAG_ENABLE)
 
 #define QMI8658_STATUS1_CMD_DONE			(0x01)
 #define QMI8658_STATUS1_WAKEUP_EVENT		(0x04)
@@ -57,21 +58,21 @@ enum Qmi8658Register
 	/*! \brief Host command register. */
 	Qmi8658Register_Ctrl9,	// 10
 	/*! \brief Calibration register 1 most significant byte. */
-	Qmi8658Register_Cal1_H = 11,
+	Qmi8658Register_Cal1_L = 11,
 	/*! \brief Calibration register 1 least significant byte. */
-	Qmi8658Register_Cal1_L,
+	Qmi8658Register_Cal1_H,
 	/*! \brief Calibration register 2 most significant byte. */
-	Qmi8658Register_Cal2_H,
-	/*! \brief Calibration register 2 least significant byte. */
 	Qmi8658Register_Cal2_L,
+	/*! \brief Calibration register 2 least significant byte. */
+	Qmi8658Register_Cal2_H,
 	/*! \brief Calibration register 3 most significant byte. */
-	Qmi8658Register_Cal3_H,
-	/*! \brief Calibration register 3 least significant byte. */
 	Qmi8658Register_Cal3_L,
+	/*! \brief Calibration register 3 least significant byte. */
+	Qmi8658Register_Cal3_H,
 	/*! \brief Calibration register 4 most significant byte. */
-	Qmi8658Register_Cal4_H,
-	/*! \brief Calibration register 4 least significant byte. */
 	Qmi8658Register_Cal4_L,
+	/*! \brief Calibration register 4 least significant byte. */
+	Qmi8658Register_Cal4_H,
 	/*! \brief FIFO control register. */
 	Qmi8658Register_FifoCtrl = 19,
 	/*! \brief FIFO data register. */
@@ -85,13 +86,13 @@ enum Qmi8658Register
 	/*! \brief Miscellaneous status register. */
 	Qmi8658Register_Status1,
 	/*! \brief timestamp low. */
-	Qmi8658Register_Timestamp_L,
+	Qmi8658Register_Timestamp_L = 48,
 	/*! \brief timestamp low. */
 	Qmi8658Register_Timestamp_M,
 	/*! \brief timestamp low. */
 	Qmi8658Register_Timestamp_H,
 	/*! \brief tempearture low. */
-	Qmi8658Register_Tempearture_L,
+	Qmi8658Register_Tempearture_L = 51,
 	/*! \brief tempearture low. */
 	Qmi8658Register_Tempearture_H,
 	/*! \brief Accelerometer X axis least significant byte. */
@@ -166,36 +167,88 @@ enum Qmi8658Register
 	Qmi8658Register_I2CM_STATUS = 110
 };
 
+enum Qmi8658_Ois_Register
+{
+	/*-----------------------------*/
+	/* Setup and Control Registers */
+	/*-----------------------------*/
+	/*! \brief SPI Endian Selection, and SPI 3/4 Wire */
+	Qmi8658_OIS_Reg_Ctrl1 = 0x02,		// 2  [0x02] -- Dflt: 0x20
+	/*! \brief Accelerometer control: ODR, Full Scale, Self Test  */
+	Qmi8658_OIS_Reg_Ctrl2, 		   		//  3  [0x03]
+	/*! \brief Gyroscope control: ODR, Full Scale, Self Test */
+	Qmi8658_OIS_Reg_Ctrl3,				//  4  [0x04]
+	/*! \brief Sensor Data Processing Settings */
+	Qmi8658_OIS_Reg_Ctrl5	= 0x06,				//  6  [0x06]
+	/*! \brief Sensor enabled status: Enable Sensors  */
+	Qmi8658_OIS_Reg_Ctrl7   = 0x08,				//  8  [0x08]
+	/*-------------------*/
+	/* Status Registers  */
+	/*-------------------*/
+	/*! \brief Sensor Data Availability and Lock Register */
+	Qmi8658_OIS_Reg_StatusInt = 0x2D,			// 45  [0x2D]
+	/*! \brief Output data overrun and availability */
+	Qmi8658_OIS_Reg_Status0   = 0x2E,			// 46  [0x2E]
+
+	/*-----------------------------------------------------*/
+	/* OIS Sensor Data Output Registers. 16-bit 2's complement */
+	/*-----------------------------------------------------*/
+	/*! \brief Accelerometer X axis least significant byte */
+	Qmi8658_OIS_Reg_Ax_L  = 0x33,			// 53  [0x35]
+	/*! \brief Accelerometer X axis most significant byte */
+	Qmi8658_OIS_Reg_Ax_H,					// 54  [0x36]
+	/*! \brief Accelerometer Y axis least significant byte */
+	Qmi8658_OIS_Reg_Ay_L,					// 55  [0x37]
+	/*! \brief Accelerometer Y axis most significant byte */
+	Qmi8658_OIS_Reg_Ay_H,					// 56  [0x38]
+	/*! \brief Accelerometer Z axis least significant byte */
+	Qmi8658_OIS_Reg_Az_L,					// 57  [0x39]
+	/*! \brief Accelerometer Z axis most significant byte */
+	Qmi8658_OIS_Reg_Az_H,					// 58  [0x3A]
+
+	/*! \brief Gyroscope X axis least significant byte */
+	Qmi8658_OIS_Reg_Gx_L  = 0x3B,			// 59  [0x3B]
+	/*! \brief Gyroscope X axis most significant byte */
+	Qmi8658_OIS_Reg_Gx_H,					// 60  [0x3C]
+	/*! \brief Gyroscope Y axis least significant byte */
+	Qmi8658_OIS_Reg_Gy_L,					// 61  [0x3D]
+	/*! \brief Gyroscope Y axis most significant byte */
+	Qmi8658_OIS_Reg_Gy_H,					// 62  [0x3E]
+	/*! \brief Gyroscope Z axis least significant byte */
+	Qmi8658_OIS_Reg_Gz_L,					// 63  [0x3F]
+	/*! \brief Gyroscope Z axis most significant byte */
+	Qmi8658_OIS_Reg_Gz_H,					// 64  [0x40]
+};
+
 enum Qmi8658_Ctrl9Command
 {
-	Ctrl9_Nop = 0,
-	Ctrl9_GyroBias = 0x01,
-	Ctrl9_ReqSdi = 0x03,
-	Ctrl9_RetFifo = 0x04,
-	Ctrl9_ReqFifo = 0x05,
-	Ctrl9_I2cmWrite = 0x06,
+	Qmi8658_Ctrl9_Cmd_NOP					= 0X00,
+	Qmi8658_Ctrl9_Cmd_GyroBias				= 0X01,
+	Qmi8658_Ctrl9_Cmd_Rqst_Sdi_Mod			= 0X03,
+	Qmi8658_Ctrl9_Cmd_WoM_Setting			= 0x08,
+	Qmi8658_Ctrl9_Cmd_AccelHostDeltaOffset	= 0x09,
+	Qmi8658_Ctrl9_Cmd_GyroHostDeltaOffset	= 0x0A,
+	Qmi8658_Ctrl9_Cmd_Dbg_WoM_Data_Enable	= 0xF8,
 
-	Ctrl9_ConfigureWakeOnMotion = 0x19,
-	Ctrl9_SetAccelOffset = 100,
-	Ctrl9_SetGyroOffset
 };
+
 
 enum Qmi8658_LpfConfig
 {
-	Lpf_Disable, /*!< \brief Disable low pass filter. */
-	Lpf_Enable   /*!< \brief Enable low pass filter. */
+	Qmi8658Lpf_Disable, /*!< \brief Disable low pass filter. */
+	Qmi8658Lpf_Enable   /*!< \brief Enable low pass filter. */
 };
 
 enum Qmi8658_HpfConfig
 {
-	Hpf_Disable, /*!< \brief Disable high pass filter. */
-	Hpf_Enable   /*!< \brief Enable high pass filter. */
+	Qmi8658Hpf_Disable, /*!< \brief Disable high pass filter. */
+	Qmi8658Hpf_Enable   /*!< \brief Enable high pass filter. */
 };
 
 enum Qmi8658_StConfig
 {
-	St_Disable, /*!< \brief Disable high pass filter. */
-	St_Enable   /*!< \brief Enable high pass filter. */
+	Qmi8658St_Disable, /*!< \brief Disable high pass filter. */
+	Qmi8658St_Enable   /*!< \brief Enable high pass filter. */
 };
 
 enum Qmi8658_LpfMode
@@ -213,40 +266,40 @@ enum Qmi8658_LpfMode
 
 enum Qmi8658_AccRange
 {
-	AccRange_2g = 0x00 << 4, /*!< \brief +/- 2g range */
-	AccRange_4g = 0x01 << 4, /*!< \brief +/- 4g range */
-	AccRange_8g = 0x02 << 4, /*!< \brief +/- 8g range */
-	AccRange_16g = 0x03 << 4 /*!< \brief +/- 16g range */
+	Qmi8658AccRange_2g = 0x00 << 4, /*!< \brief +/- 2g range */
+	Qmi8658AccRange_4g = 0x01 << 4, /*!< \brief +/- 4g range */
+	Qmi8658AccRange_8g = 0x02 << 4, /*!< \brief +/- 8g range */
+	Qmi8658AccRange_16g = 0x03 << 4 /*!< \brief +/- 16g range */
 };
 
 
 enum Qmi8658_AccOdr
 {
-	AccOdr_8000Hz = 0x00,  /*!< \brief High resolution 8000Hz output rate. */
-	AccOdr_4000Hz = 0x01,  /*!< \brief High resolution 4000Hz output rate. */
-	AccOdr_2000Hz = 0x02,  /*!< \brief High resolution 2000Hz output rate. */
-	AccOdr_1000Hz = 0x03,  /*!< \brief High resolution 1000Hz output rate. */
-	AccOdr_500Hz = 0x04,  /*!< \brief High resolution 500Hz output rate. */
-	AccOdr_250Hz = 0x05, /*!< \brief High resolution 250Hz output rate. */
-	AccOdr_125Hz = 0x06, /*!< \brief High resolution 125Hz output rate. */
-	AccOdr_62_5Hz = 0x07, /*!< \brief High resolution 62.5Hz output rate. */
-	AccOdr_31_25Hz = 0x08,  /*!< \brief High resolution 31.25Hz output rate. */
-	AccOdr_LowPower_128Hz = 0x0c, /*!< \brief Low power 128Hz output rate. */
-	AccOdr_LowPower_21Hz = 0x0d,  /*!< \brief Low power 21Hz output rate. */
-	AccOdr_LowPower_11Hz = 0x0e,  /*!< \brief Low power 11Hz output rate. */
-	AccOdr_LowPower_3Hz = 0x0f    /*!< \brief Low power 3Hz output rate. */
+	Qmi8658AccOdr_8000Hz = 0x00,  /*!< \brief High resolution 8000Hz output rate. */
+	Qmi8658AccOdr_4000Hz = 0x01,  /*!< \brief High resolution 4000Hz output rate. */
+	Qmi8658AccOdr_2000Hz = 0x02,  /*!< \brief High resolution 2000Hz output rate. */
+	Qmi8658AccOdr_1000Hz = 0x03,  /*!< \brief High resolution 1000Hz output rate. */
+	Qmi8658AccOdr_500Hz = 0x04,  /*!< \brief High resolution 500Hz output rate. */
+	Qmi8658AccOdr_250Hz = 0x05, /*!< \brief High resolution 250Hz output rate. */
+	Qmi8658AccOdr_125Hz = 0x06, /*!< \brief High resolution 125Hz output rate. */
+	Qmi8658AccOdr_62_5Hz = 0x07, /*!< \brief High resolution 62.5Hz output rate. */
+	Qmi8658AccOdr_31_25Hz = 0x08,  /*!< \brief High resolution 31.25Hz output rate. */
+	Qmi8658AccOdr_LowPower_128Hz = 0x0c, /*!< \brief Low power 128Hz output rate. */
+	Qmi8658AccOdr_LowPower_21Hz = 0x0d,  /*!< \brief Low power 21Hz output rate. */
+	Qmi8658AccOdr_LowPower_11Hz = 0x0e,  /*!< \brief Low power 11Hz output rate. */
+	Qmi8658AccOdr_LowPower_3Hz = 0x0f    /*!< \brief Low power 3Hz output rate. */
 };
 
 enum Qmi8658_GyrRange
 {
-	GyrRange_32dps = 0 << 4,   /*!< \brief +-32 degrees per second. */
-	GyrRange_64dps = 1 << 4,   /*!< \brief +-64 degrees per second. */
-	GyrRange_128dps = 2 << 4,  /*!< \brief +-128 degrees per second. */
-	GyrRange_256dps = 3 << 4,  /*!< \brief +-256 degrees per second. */
-	GyrRange_512dps = 4 << 4,  /*!< \brief +-512 degrees per second. */
-	GyrRange_1024dps = 5 << 4, /*!< \brief +-1024 degrees per second. */
-	GyrRange_2048dps = 6 << 4, /*!< \brief +-2048 degrees per second. */
-	GyrRange_4096dps = 7 << 4  /*!< \brief +-2560 degrees per second. */
+	Qmi8658GyrRange_32dps = 0 << 4,   /*!< \brief +-32 degrees per second. */
+	Qmi8658GyrRange_64dps = 1 << 4,   /*!< \brief +-64 degrees per second. */
+	Qmi8658GyrRange_128dps = 2 << 4,  /*!< \brief +-128 degrees per second. */
+	Qmi8658GyrRange_256dps = 3 << 4,  /*!< \brief +-256 degrees per second. */
+	Qmi8658GyrRange_512dps = 4 << 4,  /*!< \brief +-512 degrees per second. */
+	Qmi8658GyrRange_1024dps = 5 << 4, /*!< \brief +-1024 degrees per second. */
+	Qmi8658GyrRange_2048dps = 6 << 4, /*!< \brief +-2048 degrees per second. */
+	Qmi8658GyrRange_4096dps = 7 << 4  /*!< \brief +-2560 degrees per second. */
 };
 
 /*!
@@ -254,27 +307,27 @@ enum Qmi8658_GyrRange
  */
 enum Qmi8658_GyrOdr
 {
-	GyrOdr_8000Hz = 0x00,  /*!< \brief High resolution 8000Hz output rate. */
-	GyrOdr_4000Hz = 0x01,  /*!< \brief High resolution 4000Hz output rate. */
-	GyrOdr_2000Hz = 0x02,  /*!< \brief High resolution 2000Hz output rate. */
-	GyrOdr_1000Hz = 0x03,	/*!< \brief High resolution 1000Hz output rate. */
-	GyrOdr_500Hz	= 0x04,	/*!< \brief High resolution 500Hz output rate. */
-	GyrOdr_250Hz	= 0x05,	/*!< \brief High resolution 250Hz output rate. */
-	GyrOdr_125Hz	= 0x06,	/*!< \brief High resolution 125Hz output rate. */
-	GyrOdr_62_5Hz 	= 0x07,	/*!< \brief High resolution 62.5Hz output rate. */
-	GyrOdr_31_25Hz	= 0x08	/*!< \brief High resolution 31.25Hz output rate. */
+	Qmi8658GyrOdr_8000Hz = 0x00,  /*!< \brief High resolution 8000Hz output rate. */
+	Qmi8658GyrOdr_4000Hz = 0x01,  /*!< \brief High resolution 4000Hz output rate. */
+	Qmi8658GyrOdr_2000Hz = 0x02,  /*!< \brief High resolution 2000Hz output rate. */
+	Qmi8658GyrOdr_1000Hz = 0x03,	/*!< \brief High resolution 1000Hz output rate. */
+	Qmi8658GyrOdr_500Hz	= 0x04,	/*!< \brief High resolution 500Hz output rate. */
+	Qmi8658GyrOdr_250Hz	= 0x05,	/*!< \brief High resolution 250Hz output rate. */
+	Qmi8658GyrOdr_125Hz	= 0x06,	/*!< \brief High resolution 125Hz output rate. */
+	Qmi8658GyrOdr_62_5Hz 	= 0x07,	/*!< \brief High resolution 62.5Hz output rate. */
+	Qmi8658GyrOdr_31_25Hz	= 0x08	/*!< \brief High resolution 31.25Hz output rate. */
 };
 
 enum Qmi8658_AeOdr
 {
-	AeOdr_1Hz = 0x00,  /*!< \brief 1Hz output rate. */
-	AeOdr_2Hz = 0x01,  /*!< \brief 2Hz output rate. */
-	AeOdr_4Hz = 0x02,  /*!< \brief 4Hz output rate. */
-	AeOdr_8Hz = 0x03,  /*!< \brief 8Hz output rate. */
-	AeOdr_16Hz = 0x04, /*!< \brief 16Hz output rate. */
-	AeOdr_32Hz = 0x05, /*!< \brief 32Hz output rate. */
-	AeOdr_64Hz = 0x06,  /*!< \brief 64Hz output rate. */
-	AeOdr_128Hz = 0x07,  /*!< \brief 128Hz output rate. */
+	Qmi8658AeOdr_1Hz = 0x00,  /*!< \brief 1Hz output rate. */
+	Qmi8658AeOdr_2Hz = 0x01,  /*!< \brief 2Hz output rate. */
+	Qmi8658AeOdr_4Hz = 0x02,  /*!< \brief 4Hz output rate. */
+	Qmi8658AeOdr_8Hz = 0x03,  /*!< \brief 8Hz output rate. */
+	Qmi8658AeOdr_16Hz = 0x04, /*!< \brief 16Hz output rate. */
+	Qmi8658AeOdr_32Hz = 0x05, /*!< \brief 32Hz output rate. */
+	Qmi8658AeOdr_64Hz = 0x06,  /*!< \brief 64Hz output rate. */
+	Qmi8658AeOdr_128Hz = 0x07,  /*!< \brief 128Hz output rate. */
 	/*!
 	 * \brief Motion on demand mode.
 	 *
@@ -287,17 +340,17 @@ enum Qmi8658_AeOdr
 	 * AttitudeEngine will respond with a data ready event (INT2) when the
 	 * data is available to be read.
 	 */
-	AeOdr_motionOnDemand = 128
+	Qmi8658AeOdr_motionOnDemand = 128
 };
 
 enum Qmi8658_MagOdr
 {
-	MagOdr_1000Hz = 0x00,   /*!< \brief 1000Hz output rate. */
-	MagOdr_500Hz = 0x01,	/*!< \brief 500Hz output rate. */
-	MagOdr_250Hz = 0x02,	/*!< \brief 250Hz output rate. */
-	MagOdr_125Hz = 0x03,	/*!< \brief 125Hz output rate. */
-	MagOdr_62_5Hz = 0x04,	/*!< \brief 62.5Hz output rate. */
-	MagOdr_31_25Hz = 0x05	/*!< \brief 31.25Hz output rate. */
+	Qmi8658MagOdr_1000Hz = 0x00,   /*!< \brief 1000Hz output rate. */
+	Qmi8658MagOdr_500Hz = 0x01,	/*!< \brief 500Hz output rate. */
+	Qmi8658MagOdr_250Hz = 0x02,	/*!< \brief 250Hz output rate. */
+	Qmi8658MagOdr_125Hz = 0x03,	/*!< \brief 125Hz output rate. */
+	Qmi8658MagOdr_62_5Hz = 0x04,	/*!< \brief 62.5Hz output rate. */
+	Qmi8658MagOdr_31_25Hz = 0x05	/*!< \brief 31.25Hz output rate. */
 };
 	
 enum Qmi8658_MagDev
@@ -307,20 +360,20 @@ enum Qmi8658_MagDev
 
 enum Qmi8658_AccUnit
 {
-	AccUnit_g,  /*!< \brief Accelerometer output in terms of g (9.81m/s^2). */
-	AccUnit_ms2 /*!< \brief Accelerometer output in terms of m/s^2. */
+	Qmi8658AccUnit_g,  /*!< \brief Accelerometer output in terms of g (9.81m/s^2). */
+	Qmi8658AccUnit_ms2 /*!< \brief Accelerometer output in terms of m/s^2. */
 };
 
 enum Qmi8658_GyrUnit
 {
-	GyrUnit_dps, /*!< \brief Gyroscope output in degrees/s. */
-	GyrUnit_rads /*!< \brief Gyroscope output in rad/s. */
+	Qmi8658GyrUnit_dps, /*!< \brief Gyroscope output in degrees/s. */
+	Qmi8658GyrUnit_rads /*!< \brief Gyroscope output in rad/s. */
 };
 
-struct FisImuConfig
+struct Qmi8658Config
 {
 	/*! \brief Sensor fusion input selection. */
-	uint8_t inputSelection;
+	unsigned char inputSelection;
 	/*! \brief Accelerometer dynamic range configuration. */
 	enum Qmi8658_AccRange accRange;
 	/*! \brief Accelerometer output rate. */
@@ -350,42 +403,42 @@ struct FisImuConfig
 };
 
 
-#define QMI8658_SAMPLE_SIZE (3 * sizeof(int16_t))
-#define QMI8658_AE_SAMPLE_SIZE ((4+3+1) * sizeof(int16_t) + sizeof(uint8_t))
+#define QMI8658_SAMPLE_SIZE (3 * sizeof(short))
+#define QMI8658_AE_SAMPLE_SIZE ((4+3+1) * sizeof(short) + sizeof(unsigned char))
 struct FisImuRawSample
 {
 	/*! \brief The sample counter of the sample. */
-	uint8_t timestamp[3];
+	unsigned char timestamp[3];
 	/*!
 	 * \brief Pointer to accelerometer data in the sample buffer.
 	 *
 	 * \c NULL if no accelerometer data is available in the buffer.
 	 */
-	uint8_t const* accelerometerData;
+	unsigned char const* accelerometerData;
 	/*!
 	 * \brief Pointer to gyroscope data in the sample buffer.
 	 *
 	 * \c NULL if no gyroscope data is available in the buffer.
 	 */
-	uint8_t const* gyroscopeData;
+	unsigned char const* gyroscopeData;
 	/*!
 	 * \brief Pointer to magnetometer data in the sample buffer.
 	 *
 	 * \c NULL if no magnetometer data is available in the buffer.
 	 */
-	uint8_t const* magnetometerData;
+	unsigned char const* magnetometerData;
 	/*!
 	 * \brief Pointer to AttitudeEngine data in the sample buffer.
 	 *
 	 * \c NULL if no AttitudeEngine data is available in the buffer.
 	 */
-	uint8_t const* attitudeEngineData;
+	unsigned char const* attitudeEngineData;
 	/*! \brief Raw sample buffer. */
-	uint8_t sampleBuffer[QMI8658_SAMPLE_SIZE + QMI8658_AE_SAMPLE_SIZE];
+	unsigned char sampleBuffer[QMI8658_SAMPLE_SIZE + QMI8658_AE_SAMPLE_SIZE];
 	/*! \brief Contents of the FIS status 1 register. */
-	uint8_t status1;
-	//uint8_t status0;
-	//uint32_t durT;
+	unsigned char status1;
+	//unsigned char status0;
+	//unsigned int durT;
 };
 
 struct Qmi8658_offsetCalibration
@@ -405,46 +458,39 @@ struct Qmi8658_sensitivityCalibration
 enum Qmi8658_Interrupt
 {
 	/*! \brief FIS INT1 line. */
-	Fis_Int1 = (0 << 6),
+	Qmi8658_Int1 = (0 << 6),
 	/*! \brief FIS INT2 line. */
-	Fis_Int2 = (1 << 6)
+	Qmi8658_Int2 = (1 << 6)
 };
 
-enum Qmi8658_InterruptInitialState
+enum Qmi8658_InterruptState
 {
-	InterruptInitialState_high = (1 << 7), /*!< Interrupt high. */
-	InterruptInitialState_low  = (0 << 7)  /*!< Interrupt low. */
+	Qmi8658State_high = (1 << 7), /*!< Interrupt high. */
+	Qmi8658State_low  = (0 << 7)  /*!< Interrupt low. */
 };
 
 enum Qmi8658_WakeOnMotionThreshold
 {
-	WomThreshold_high = 128, /*!< High threshold - large motion needed to wake. */
-	WomThreshold_low  = 32   /*!< Low threshold - small motion needed to wake. */
+	Qmi8658WomThreshold_high = 128, /*!< High threshold - large motion needed to wake. */
+	Qmi8658WomThreshold_low  = 32   /*!< Low threshold - small motion needed to wake. */
 };
 
 
-extern uint8_t Qmi8658_write_reg(uint8_t reg, uint8_t value);
-extern uint8_t Qmi8658_read_reg(uint8_t reg, uint8_t* buf, uint16_t len);
-extern uint8_t Qmi8658_init(void);
-extern void Qmi8658_Config_apply(struct FisImuConfig const* config);
-extern void Qmi8658_enableSensors(uint8_t enableFlags);
+extern unsigned char Qmi8658_write_reg(unsigned char reg, unsigned char value);
+extern unsigned char Qmi8658_read_reg(unsigned char reg, unsigned char* buf, unsigned short len);
+extern unsigned char Qmi8658_init(void);
+extern void Qmi8658_Config_apply(struct Qmi8658Config const* config);
+extern void Qmi8658_enableSensors(unsigned char enableFlags);
 extern void Qmi8658_read_acc_xyz(float acc_xyz[3]);
 extern void Qmi8658_read_gyro_xyz(float gyro_xyz[3]);
 extern void Qmi8658_read_xyz(float acc[3], float gyro[3], unsigned int *tim_count);
 extern void Qmi8658_read_xyz_raw(short raw_acc_xyz[3], short raw_gyro_xyz[3], unsigned int *tim_count);
 extern void Qmi8658_read_ae(float quat[4], float velocity[3]);
-extern uint8_t Qmi8658_readStatus0(void);
-extern uint8_t Qmi8658_readStatus1(void);
+extern unsigned char Qmi8658_readStatus0(void);
+extern unsigned char Qmi8658_readStatus1(void);
 extern float Qmi8658_readTemp(void);
 extern void Qmi8658_enableWakeOnMotion(void);
 extern void Qmi8658_disableWakeOnMotion(void);
-// for XKF3
-extern void Qmi8658_processAccelerometerData(uint8_t const* rawData, float* calibratedData);
-extern void Qmi8658_processGyroscopeData(uint8_t const* rawData, float* calibratedData);
-extern void Qmi8658_read_rawsample(struct FisImuRawSample *sample);
-extern void Qmi8658_applyOffsetCalibration(struct Qmi8658_offsetCalibration const* cal);
-// for XKF3
-extern uint16_t acc_lsb_div;
-extern uint16_t gyro_lsb_div;
-// fis210x
+
+
 #endif

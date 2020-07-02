@@ -16,18 +16,20 @@
 #include <stdbool.h>
 #include <string.h>
 
-//typedef		void					void; 	
-typedef		char					qs8;
-typedef		unsigned char			qu8;
-typedef		short					qs16;
-typedef		unsigned short			qu16;
-typedef		int						qs32;
-typedef		unsigned int			qu32;
-typedef		long long				qs64;
+//typedef		void					void; 
+#ifndef QST_BASE_TYPE
+#define QST_BASE_TYPE
+typedef		signed char						qs8;
+typedef		unsigned char					qu8;
+typedef		short									qs16;
+typedef		unsigned short				qu16;
+typedef		int										qs32;
+typedef		unsigned int					qu32;
+typedef		long long							qs64;
 typedef		unsigned long long		qu64;
-typedef		float					qf32;
-typedef		double					qd64;
-
+typedef		float									qf32;
+typedef		double								qd64;
+#endif
 
 #define QMA6100_LOG		printf
 #define QMA6100_ERR		printf

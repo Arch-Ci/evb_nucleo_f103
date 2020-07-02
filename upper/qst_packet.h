@@ -22,6 +22,18 @@
 #define __QST_PACKET_H__
 
 //#include "mltypes.h"
+// ????¨¦????¨²
+#define QST_IMU_ANO_TC
+// sscom 2¡§D?¨ª?
+//#define QST_SSCOM_WAVEFORM
+
+
+typedef struct
+{
+	short acc_raw[3];
+	short gyr_raw[3];
+	short mag_raw[3];
+} qst_ano_tc_t;
 
 typedef enum {
     PACKET_DATA_ACCEL = 0,
@@ -56,17 +68,30 @@ typedef enum {
 #define BYTE2(dwTemp)				(*((char *)(&dwTemp) + 2))
 #define BYTE3(dwTemp)				(*((char *)(&dwTemp) + 3))
 
+typedef struct plotsim
+{
+	short head;
+	short len;
+	short buf[3];
+} plotsscom_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-int qst_send_str(unsigned char *str, int len);
+#if defined(QST_IMU_ANO_TC)
+void qst_send_str(unsigned char *str, int len);
 void qst_send_data(unsigned char type, long *data);
 void qst_send_imu_quat(long *quat);
 void qst_send_imu_euler(float angle_pit, float angle_rol, float angle_yaw, int alt, unsigned char fly_model, unsigned char armed);
 void qst_send_imu_rawdata(short *Gyro,short *Accel, short *Mag);
 void qst_send_imu_rawdata2(int alt_bar, unsigned short alt_csb);
+void qst_send_imu_data(float *euler, float *Gyro, float *Accel, float *Mag, float Press);
 void qst_send_power(unsigned short votage, unsigned short current);
 void qst_send_version(unsigned char hardware_type, unsigned short hardware_ver,unsigned short software_ver,unsigned short protocol_ver,unsigned short bootloader_ver);
+#endif
+#if defined(QST_SSCOM_WAVEFORM)
+void qst_evb_plotsscom(int x, int y, int z);
+#endif
 #ifdef __cplusplus
 }
 #endif

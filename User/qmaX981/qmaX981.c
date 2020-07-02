@@ -81,9 +81,9 @@ qs32 qmaX981_writereg(qu8 reg_add, qu8 reg_dat)
 		ret = qmaX981_spi_write(reg_add, reg_dat);
 #else
 	#if defined(QST_USE_SW_I2C)
-		ret = qst_sw_writereg(g_qmaX981.salve, reg_add, reg_dat);
+		ret = qst_sw_writereg(g_qmaX981.salve<<1, reg_add, reg_dat);
 	#else
-		ret = I2C_ByteWrite(g_qmaX981.salve, reg_add, reg_dat);
+		ret = I2C_ByteWrite(g_qmaX981.salve<<1, reg_add, reg_dat);
 	#endif
 #endif
 	}
@@ -105,9 +105,9 @@ qs32 qmaX981_readreg(qu8 reg_add, qu8 *buf, qu16 num)
 		ret =  qmaX981_spi_read(reg_add, buf, num);
 #else
 		#if defined(QST_USE_SW_I2C)
-		ret =  qst_sw_readreg(g_qmaX981.salve, reg_add, buf, num);
+		ret =  qst_sw_readreg(g_qmaX981.salve<<1, reg_add, buf, num);
 		#else
-		ret =  I2C_BufferRead(g_qmaX981.salve, reg_add, buf, (qu16)num);
+		ret =  I2C_BufferRead(g_qmaX981.salve<<1, reg_add, buf, num);
 		#endif
 #endif
 	}
@@ -125,7 +125,7 @@ qu8 qmaX981_chip_id(void)
 	qu32 retry = 0;
 
 	qmaX981_writereg(QMAX981_REG_POWER_CTL, 0x80);
-	while(!((chip_id >= QMA7981_DEVICE_ID)&&(chip_id <= QMA7981_DEVICE_ID2)))
+	while(chip_id != QMA7981_DEVICE_ID)
 	{
 		qmaX981_readreg(QMAX981_CHIP_ID, &chip_id, 1);
 		QMAX981_LOG("qmaX981_chip_id id=0x%x \n", chip_id);
@@ -652,35 +652,103 @@ void qmaX981_nomotion_config(qs32 int_map, qs32 enable)
 }
 #endif
 
-#if defined(QMAX981_HAND_RAISE_DOWN)
-void qmaX981_hand_raise_down(qs32 int_map, qs32 enable)
-{
-	qu8 reg_16,reg_19,reg_1b;
-	
-	qmaX981_readreg(0x16, &reg_16, 1);
-	qmaX981_readreg(0x19, &reg_19, 1);
-	qmaX981_readreg(0x1b, &reg_1b, 1);
 
-	if(enable)
+#if defined(QMAX981_HAND_RAISE_DOWN)
+void qmaX981_hand_raise_down(qs32 layout, qs32 int_map, qs32 enable)
+{
+	qu8 reg_0x16 = 0;		// swap x y
+	qu8 reg_0x19 = 0;
+	qu8 reg_0x1b = 0;
+	qu8 reg_0x42 = 0;		// swap x y
+	qu8 reg_0x1e = 0;
+	qu8 reg_0x34 = 0;
+	qu8 yz_th_sel = 4;
+	qs8 y_th = -3; //-2;				// -16 ~ 15
+	qu8 x_th = 6; 	// 0--7.5
+	qs8 z_th = 6;				// -8--7
+
+	if(layout%2)
 	{
-		reg_16 |= (0x02|0x04);
-		reg_19 |= (0x02|0x04);
-		reg_1b |= (0x02|0x04);
-		qmaX981_writereg(0x16, reg_16);
-		if(int_map == QMA6100_MAP_INT1)
-			qmaX981_writereg(0x19, reg_19);
-		else if(int_map == QMA6100_MAP_INT1)
-			qmaX981_writereg(0x1b, reg_1b);
+		qmaX981_readreg(0x42, &reg_0x42, 1);
+		reg_0x42 |= 0x80;		// 0x42 bit 7 swap x and y
+		qmaX981_writereg(0x42, reg_0x42);
+	}
+
+	if((layout >=0) && (layout<=3))
+	{
+		z_th = 3;
+		if((layout == 2)||(layout == 3))
+			y_th = 3; 
+		else if((layout == 0)||(layout == 1))	
+			y_th = -3;
+	}
+	else if((layout >=4) && (layout<=7))
+	{
+		z_th = -3;
+		
+		if((layout == 6)||(layout == 7))
+			y_th = 3; 
+		else if((layout == 4)||(layout == 5))	
+			y_th = -3;
+	}
+	// 0x34 YZ_TH_SEL[7:5]	Y_TH[4:0], default 0x9d  (YZ_TH_SEL   4   9.0 m/s2 | Y_TH  -3  -3 m/s2)
+	//qmaX981_write_reg(0x34, 0x9d);	//|yz|>8 m/s2, y>-3 m/m2
+	if((y_th&0x80))
+	{
+		reg_0x34 |= yz_th_sel<<5;
+		reg_0x34 |= (y_th&0x0f)|0x10;
+		qmaX981_writereg(0x34, reg_0x34);
+	}
+	else
+	{	
+		reg_0x34 |= yz_th_sel<<5;
+		reg_0x34 |= y_th;
+		qmaX981_writereg(0x34, reg_0x34);	//|yz|>8m/s2, y<3 m/m2
+	}
+	//Z_TH<7:4>: -8~7, LSB 1 (unit : m/s2)	X_TH<3:0>: 0~7.5, LSB 0.5 (unit : m/s2) 
+	//qmaX981_write_reg(0x1e, 0x68);	//6 m/s2, 4 m/m2
+	qmaX981_writereg(0x2a, (0x19|(0x03<<6)));			// 12m/s2 , 0.5m/s2
+	qmaX981_writereg(0x2b, (0x7c|(0x03>>2)));
+	//qmaX981_write_reg(0x2a, (0x19|(0x02<<6)));			// 12m/s2 , 0.5m/s2
+	//qmaX981_write_reg(0x2b, (0x7c|(0x02)));
+
+	//qmaX981_readreg(0x1e, &reg_0x1e, 1);
+	if((z_th&0x80))
+	{
+		reg_0x1e |= (x_th&0x0f);
+		reg_0x1e |= ((z_th<<4)|0x80);
+		qmaX981_writereg(0x1e, reg_0x1e);
 	}
 	else
 	{
-		reg_16 &= ~((0x02|0x04));
-		reg_19 &= ~((0x02|0x04));
-		reg_1b &= ~((0x02|0x04));
-		qmaX981_writereg(0x16, reg_16);
-		qmaX981_writereg(0x19, reg_19);
-		qmaX981_writereg(0x1b, reg_1b);
+		reg_0x1e |= (x_th&0x0f);
+		reg_0x1e |= (z_th<<4);
+		qmaX981_writereg(0x1e, reg_0x1e);
 	}
+
+	// RAISE_WAKE_PERIOD*(1/ODR), default 0x81
+	qmaX981_writereg(0x35, 0x50);
+
+	qmaX981_readreg(0x16, &reg_0x16, 1);
+	qmaX981_readreg(0x19, &reg_0x16, 1);
+	qmaX981_readreg(0x1b, &reg_0x16, 1);
+	if(enable)
+	{
+		reg_0x16 |= 0x02|0x04;	// hand up, hand down
+		reg_0x19 |= 0x02|0x04;
+		reg_0x1b |= 0x02|0x04;
+	}
+	else
+	{
+		reg_0x16 &= ~(0x02|0x04);	// hand up, hand down
+		reg_0x19 &= ~(0x02|0x04);
+		reg_0x1b &= ~(0x02|0x04);
+	}
+	qmaX981_writereg(0x16, reg_0x16);
+	if(int_map == QMAX981_MAP_INT1)
+		qmaX981_writereg(0x19, reg_0x19);
+	else if(int_map == QMAX981_MAP_INT2)
+		qmaX981_writereg(0x1b, reg_0x1b);
 }
 #endif
 
@@ -689,15 +757,7 @@ void qmaX981_irq_hdlr(void)
 {
 	qs32 ret = 0;
 	qu8 databuf[4];
-	
-#if defined(QMAX981_DATA_READY)
-	{
-		qs32 raw[3];
-		qmaX981_read_raw(raw);
-		QMAX981_LOG("drdy	%d	%d	%d\n", raw[0], raw[1], raw[2]);
-		return;
-	}
-#endif
+
 	ret = qmaX981_readreg(0x09, databuf, 4);
 	if(ret == QMAX981_SUCCESS)
 	{
@@ -841,7 +901,7 @@ static qs32 qmaX981_initialize(void)
 #endif
 
 #if defined(QMAX981_HAND_RAISE_DOWN)
-	qmaX981_hand_raise_down(QMAX981_MAP_INT1, QMAX981_ENABLE);
+	qmaX981_hand_raise_down(3, QMAX981_MAP_INT1, QMAX981_ENABLE);
 #endif
 
 #if defined(QMAX981_INT_LATCH)
@@ -864,14 +924,19 @@ qs8 qmaX981_init(void)
 
 	for(index=0; index<2; index++)
 	{
-		g_qmaX981.salve = slave_addr[0]<<1;
+		g_qmaX981.salve = slave_addr[0];
 		g_qmaX981.chip_id = qmaX981_chip_id();
+		if(g_qmaX981.chip_id == QMA7981_DEVICE_ID)
+		{			
+			QMAX981_LOG("qmaX981 find \n");
+			break;
+		}
 	}
-	if((g_qmaX981.chip_id >= QMA7981_DEVICE_ID)&&(g_qmaX981.chip_id <= QMA7981_DEVICE_ID2))
+	if(g_qmaX981.chip_id == QMA7981_DEVICE_ID)
 	{
 #if defined(QMAX981_FIX_IIC)
 		qmaX981_writereg(0x20, 0x45);
-		g_qmaX981.salve = QMAX981_I2C_SLAVE_ADDR<<1;
+		g_qmaX981.salve = QMAX981_I2C_SLAVE_ADDR;
 #endif
 		ret = qmaX981_initialize();
 		if(ret != QMAX981_SUCCESS)

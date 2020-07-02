@@ -5,8 +5,8 @@
 #include "bsp_i2c.h"
 #include "qst_sw_i2c.h"
 
-#define QMP6988_SLAVE_ADDRESS_L  (0x70<<1)
-#define QMP6988_SLAVE_ADDRESS_H  (0x56<<1)
+#define QMP6988_SLAVE_ADDRESS_L  0x70
+#define QMP6988_SLAVE_ADDRESS_H  0x56
 
 #define QMP6988_U16_t unsigned short
 #define QMP6988_S16_t short
@@ -16,7 +16,7 @@
 #define QMP6988_S64_t long long
 
 
-#define QMP6988_CHIP_ID							0x5C
+#define QMP6988_CHIP_ID						0x5C
 
 #define QMP6988_CHIP_ID_REG					0xD1
 #define QMP6988_RESET_REG             		0xE0  /* Device reset register */

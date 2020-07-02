@@ -28,7 +28,6 @@
 #include "qst_packet.h"
 
 
-static unsigned       char data_to_send[50];
 
 int qst_putchar(int ch)
 {
@@ -39,7 +38,7 @@ int qst_putchar(int ch)
 }
 
 
-int qst_send_str(unsigned char *str, int len)
+void qst_send_str(unsigned char *str, int len)
 {
 	int i;
 	for(i=0; i<len; i++)
@@ -49,6 +48,10 @@ int qst_send_str(unsigned char *str, int len)
 	}
 }
 
+
+#if defined(QST_IMU_ANO_TC)
+static unsigned			char data_to_send[50];
+static qst_ano_tc_t		g_ano;
 
 int qst_print_log (int priority, const char* tag, const char* fmt, ...)
 {
@@ -343,6 +346,24 @@ void qst_send_imu_rawdata2(int alt_bar, unsigned short alt_csb)
 
 }
 
+void qst_send_imu_data(float *euler, float *Gyro, float *Accel, float *Mag, float Press)
+{
+	g_ano.acc_raw[0] = (short)(Accel[0]*1000.0f);
+	g_ano.acc_raw[1] = (short)(Accel[1]*1000.0f);
+	g_ano.acc_raw[2] = (short)(Accel[2]*1000.0f);
+	g_ano.gyr_raw[0] = (short)(Gyro[0]*57.2957796f);
+	g_ano.gyr_raw[1] = (short)(Gyro[1]*57.2957796f);
+	g_ano.gyr_raw[2] = (short)(Gyro[2]*57.2957796f);
+	g_ano.mag_raw[0] = (short)Mag[0];
+	g_ano.mag_raw[1] = (short)Mag[1];
+	g_ano.mag_raw[2] = (short)Mag[2];
+
+	qst_send_imu_euler(euler[0], euler[1], euler[2], 0, 0x01, 1);
+	qst_send_imu_rawdata(g_ano.gyr_raw, g_ano.acc_raw, g_ano.mag_raw);
+	qst_send_imu_rawdata2((int)(Press*100), 0);
+}
+
+
 void qst_send_power(unsigned short votage, unsigned short current)
 {
     unsigned char _cnt=0;
@@ -404,5 +425,25 @@ void qst_send_version(unsigned char hardware_type, unsigned short hardware_ver,u
 	for(i=0;i<_cnt;i++)
 		qst_putchar(data_to_send[i]);
 }
+#endif
 
+#if defined(QST_SSCOM_WAVEFORM)
+void qst_evb_plotsscom(int x, int y, int z)
+{
+	int pktSize;
+	plotsscom_t g_plotsim;
+
+	g_plotsim.head = 0xCDAB;             //SimPlot packet header. Indicates start of data packet
+	g_plotsim.len = 4*sizeof(plotsscom_t);      //Size of data in bytes. Does not include the header and size fields
+	g_plotsim.buf[0] = (short)x*10;
+	g_plotsim.buf[1] = (short)y*10;
+	g_plotsim.buf[2] = (short)z*10;
+	//g_plotsim.buf[3] = z;
+
+	pktSize = sizeof(plotsscom_t); //Header bytes + size field bytes + data
+	//IMPORTANT: Change to serial port that is connected to PC
+	//Serial.write((uint8_t * )buffer, pktSize);	
+	qst_send_str((unsigned char *)g_plotsim.buf, pktSize);
+}
+#endif
 

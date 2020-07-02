@@ -71,9 +71,9 @@ uint8_t qmp6988_WriteReg(uint8_t slave, uint8_t reg_add,uint8_t reg_dat)
 #if defined(QST_USE_SPI)
 		ret =  qmp6988_spi_write(reg_add, reg_dat);
 #elif defined(QST_USE_SW_I2C)
-		ret = qst_sw_writereg(slave, reg_add, reg_dat);
+		ret = qst_sw_writereg(slave<<1, reg_add, reg_dat);
 #else
-		ret = I2C_ByteWrite(slave, reg_add, reg_dat); 
+		ret = I2C_ByteWrite(slave<<1, reg_add, reg_dat); 
 #endif
 	}
 
@@ -90,9 +90,9 @@ uint8_t qmp6988_ReadData(uint8_t slave, uint8_t reg_add,unsigned char* Read,uint
 #if defined(QST_USE_SPI)
 		ret = qmp6988_spi_read(reg_add, Read, num);
 #elif defined(QST_USE_SW_I2C)
-		ret = qst_sw_readreg(slave, reg_add, Read, num);
+		ret = qst_sw_readreg(slave<<1, reg_add, Read, num);
 #else
-		ret = I2C_BufferRead(slave, reg_add, Read, num);
+		ret = I2C_BufferRead(slave<<1, reg_add, Read, num);
 #endif
 	}
 

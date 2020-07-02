@@ -11,12 +11,22 @@
 #endif
 
 #include "stm32f10x.h"
+#include "stm32f10x_it.h"
+#include "stm32f10x_spi.h"
+#include "bsp_SysTick.h"
+#include "bsp_led.h"
+#include "bsp_usart.h"
+#include "bsp_i2c.h"
+#include "qst_sw_i2c.h"
+#include "bsp_spi.h"
+#include "bsp_flash.h"
+
 #include "qmaX981.h"
 #include "qma6100.h"
 #include "qmcX983.h"
 #include "qmp6988.h"
 #include "qmi8610.h"
-//#include "qmi8658.h"
+#include "qmi8658.h"
 #include "qmc6308.h"
 #include "px318j.h"
 
@@ -175,16 +185,6 @@ typedef struct
 	TRANSFORM_T		mag;
 	short			mag_accuracy;
 } qst_evb_offset_t;
-
-
-
-typedef struct
-{
-	short acc_raw[3];
-	short gyr_raw[3];
-	short mag_raw[3];
-} qst_ano_tc_t;
-
 
 
 #ifdef __cplusplus

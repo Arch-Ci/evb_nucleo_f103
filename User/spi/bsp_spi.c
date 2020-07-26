@@ -207,7 +207,7 @@ uint8_t spi_sw_write_data(uint8_t data)
 		{
 			SPI_MOSI_LOW;
 		}
-		SPI_SCK_HIGH; //我这里是选择下降沿采集数据
+		SPI_SCK_HIGH;
 		//SPI_SCK_LOW;
 
 		data<<=1;
@@ -233,6 +233,7 @@ void spi_sw_Init(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	//RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOA ,ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA ,ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB ,ENABLE);
 
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5|GPIO_Pin_7; //SPI_CS and SPI_SCK and SPI_OUT
@@ -244,9 +245,9 @@ void spi_sw_Init(void)
 	GPIO_Init(GPIOA,&GPIO_InitStructure);
 
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4; //SPI_CS and SPI_SCK and SPI_OUT
+	GPIO_InitStructure.GPIO_Pin = QST_SPI_CS_PIN; //SPI_CS and SPI_SCK and SPI_OUT
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOA,&GPIO_InitStructure);
+	GPIO_Init(QST_SPI_CS_PORT,&GPIO_InitStructure);
 
 	SPI_CS_HIGH;
 	SPI_SCK_LOW;

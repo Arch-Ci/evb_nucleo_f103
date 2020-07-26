@@ -20,6 +20,7 @@
 #include "qst_sw_i2c.h"
 #include "bsp_spi.h"
 #include "bsp_flash.h"
+#include "sd1306.h"
 
 #include "qmaX981.h"
 #include "qma6100.h"
@@ -30,9 +31,10 @@
 #include "qmc6308.h"
 #include "px318j.h"
 
-#include "../../algo/imu/qst_algo_imu.h"
-#include "../../algo/compass/ICAL.h"
-#include "../../upper/qst_packet.h"
+#include "qst_fusion.h"
+//#include "../../algo/imu/qst_algo_imu.h"
+#include "ICAL.h"
+#include "qst_packet.h"
 
 
 typedef void (*int_callback)(void);
@@ -105,24 +107,14 @@ typedef enum
 
 typedef struct
 {
-	int sensor;
-	float timestamp;
     union {
-        int data1[3];
+        int data[3];
         struct {
-            int x1;
-            int y1;
-            int z1;
+            int x;
+            int y;
+            int z;
         };
     };	
-    union {
-        int data2[3];
-        struct {
-            int x2;
-            int y2;
-            int z2;
-        };
-    };
 } sensors_raw_t;
 
 
@@ -131,24 +123,23 @@ typedef struct
 	int sensor;
 	float timestamp;
     union {
-        float data1[3];
+        float data[3];
         struct {
-            float x1;
-            float y1;
-            float z1;
-        };
-    };	
-    union {
-        float data2[3];
-        struct {
-            float x2;
-            float y2;
-            float z2;
+            float x;
+            float y;
+            float z;
         };
     };
-	unsigned int step;
 } sensors_vec_t;
 
+typedef struct
+{
+	float acc[3];
+	float gyr[3];
+	float mag[3];
+	float quat[4];
+	float euler[4];
+} qst_algo_imu_t;
 
 typedef struct
 {
@@ -169,9 +160,9 @@ typedef struct
 	int_callback		tim3_func;
 	int_callback		tim4_func;
 
-	//sensors_raw_t		out_raw;
 	sensors_vec_t		out;
-	sensors_vec_t		imu;
+	sensors_vec_t		out2;
+	unsigned int		step;
 } qst_evb_t;
 
 

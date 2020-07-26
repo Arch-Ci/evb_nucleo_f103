@@ -515,19 +515,21 @@ void qma6100_stepcounter_config(qs32 enable)
 	}
 	qma6100_writereg(0x13, 0x7f);
 	// odr 116.7 Hz, 8.568ms
-	reg_14 = (310*odr)/(1000);			// 310 ms
-	reg_15 = ((2000/8)*odr)/(1000);		// 2000 ms
+  reg_14 = ((300*odr)/(1000))+1;      // 300 ms
+  reg_15 = (((2000/8)*odr)/1000)+1;   // 2000 ms
 	QMA6100_LOG("step time config 0x14=0x%x	0x15=0x%x\n", reg_14, reg_15);
 
 	qma6100_writereg(0x14, reg_14);
 	qma6100_writereg(0x15, reg_15);
 
+  //qma6100_writereg(0x1e, 0x08);
+
 	//qma6100_writereg(0x1f, 0x09);	// 0 step
 	//qma6100_writereg(0x1f, 0x29);	// 4 step
 	//qma6100_writereg(0x1f, 0x49);	// 8 step
-	qma6100_writereg(0x1f, 0x69);	// 12 step
+	//qma6100_writereg(0x1f, 0x69);	// 12 step
 	//qma6100_writereg(0x1f, 0x89);	// 16 step
-	//qma6100_writereg(0x1f, 0xa9);	// 24 step
+	qma6100_writereg(0x1f, 0xa9);	// 24 step
 	//qma6100_writereg(0x1f, 0xc9);	// 32 step
 	//qma6100_writereg(0x1f, 0xe9);	// 40 step
 }

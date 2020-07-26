@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD SYSCLK_USE_HSI USE_STDPERIPH_DRIVER ST_NUCLEO_BOARD USE_I2C_1_PB8_9 QST_USE_SW_I2C</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS;..\..\User;..\..\Libraries\FWlib\inc;..\..\User\i2c;..\..\User\spi;..\..\User\usart;..\..\User\qmaX981;..\..\User\qmc6308;..\..\User\qmcX983;..\..\User\qmp6988;..\..\User\qmi8610;..\..\User\px318j;..\..\User\SysTick;..\..\User\flash;..\..\User\Led;..\..\User\qma6100;..\..\User\qmi8658</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS;..\..\User;..\..\Libraries\FWlib\inc;..\..\User\i2c;..\..\User\spi;..\..\User\usart;..\..\User\qmaX981;..\..\User\qmc6308;..\..\User\qmcX983;..\..\User\qmp6988;..\..\User\qmi8610;..\..\User\px318j;..\..\User\SysTick;..\..\User\flash;..\..\User\Led;..\..\User\qma6100;..\..\User\qmi8658;..\..\User\sd1306;..\..\algo\fusion;..\..\algo\MagCali;..\..\algo\compass;..\..\upper</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -647,6 +647,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\qmi8658\qmi8658.c</FilePath>
             </File>
+            <File>
+              <FileName>sd1306.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\sd1306\sd1306.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -660,27 +665,12 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>algo</GroupName>
+          <GroupName>fusion</GroupName>
           <Files>
             <File>
-              <FileName>qst_algo_imu_data.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\algo\imu\qst_algo_imu_data.c</FilePath>
-            </File>
-            <File>
-              <FileName>ical.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\algo\compass\ical.c</FilePath>
-            </File>
-            <File>
-              <FileName>qst_algo_imu_filter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\algo\imu\qst_algo_imu_filter.c</FilePath>
-            </File>
-            <File>
-              <FileName>qst_algo_imu_v1_6.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\algo\imu\qst_algo_imu_v1_6.c</FilePath>
+              <FileName>qst_lib_fusion.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\algo\fusion\qst_lib_fusion.lib</FilePath>
             </File>
           </Files>
         </Group>
@@ -691,6 +681,16 @@
               <FileName>qst_packet.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\upper\qst_packet.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>magcali</GroupName>
+          <Files>
+            <File>
+              <FileName>qst_lib_compass.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\algo\compass\qst_lib_compass.lib</FilePath>
             </File>
           </Files>
         </Group>

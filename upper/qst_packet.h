@@ -22,9 +22,9 @@
 #define __QST_PACKET_H__
 
 //#include "mltypes.h"
-// ????é????ú
-#define QST_IMU_ANO_TC
-// sscom 2¨D?í?
+// 匿名上位机
+//#define QST_IMU_ANO_TC
+// sscom 波形图
 //#define QST_SSCOM_WAVEFORM
 
 

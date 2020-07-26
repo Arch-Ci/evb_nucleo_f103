@@ -33,7 +33,7 @@ typedef		double							qd64;
 
 //#define QMAX981_QST_USE_SPI
 
-//#define QMAX981_STEPCOUNTER
+#define QMAX981_STEPCOUNTER
 //#define QMAX981_STEP_INT
 //#define QMAX981_SIGNIFICANT_STEP_INT
 //#define QMAX981_FIFO_FUNC
@@ -42,7 +42,7 @@ typedef		double							qd64;
 //#define QMAX981_NO_MOTION
 //#define QMAX981_SIGNIFICANT_MOTION
 //#define QMAX981_HAND_RAISE_DOWN
-#define QMAX981_INT_LATCH
+//#define QMAX981_INT_LATCH
 
 #define QMA7981_DEVICE_ID		    0xe7
 #define QMA7981_DEVICE_ID2		    0xe9

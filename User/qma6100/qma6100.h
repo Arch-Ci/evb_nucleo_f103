@@ -220,4 +220,4 @@ extern void qma6100_nomotion_config(qs32 int_map, qs32 enable);
 extern void qma6100_irq_hdlr(void);
 
 
-#endif  /*QMX6981*/
+#endif  /*QMA6100*/

@@ -47,6 +47,14 @@
 #define QMC6308_DEFAULT_DELAY			200
 
 enum{
+	QMC_NONE = 0,
+	QMC_6308 = 1,
+	QMC_6310 = 2,
+
+	QMC_TOTAL
+};
+
+enum{
 	AXIS_X = 0,
 	AXIS_Y = 1,
 	AXIS_Z = 2,
@@ -61,6 +69,7 @@ typedef struct{
 
 int qmc6308_init(void);
 int qmc6308_read_mag_xyz(float *data);
+int qmc6308_do_selftest(float *data);
 
 #endif
 

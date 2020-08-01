@@ -489,6 +489,9 @@ void qst_evb_acc_read(void)
 #endif
 	}
 	QST_PRINTF("%f	%f	%f	step:%d\r\n", g_evb.out.x, g_evb.out.y, g_evb.out.z, g_evb.step);
+#if defined(LCM_SD1306_SUPPORT)
+	sd1306_show_num(1, 1, g_evb.step, 6, 16);
+#endif
 }
 
 void qst_evb_acc_drdy(void)
@@ -658,11 +661,16 @@ void qst_evb_acc_tim2(void)
 #endif
 	}
 	QST_PRINTF("Acc: %f	%f	%f	step:%d\r\n", g_evb.out.x, g_evb.out.y, g_evb.out.z, g_evb.step);
-	//qst_evb_plotsscom((int)g_evb.out.x1*1000/9.807, (int)g_evb.out.y1*1000/9.807, (int)g_evb.out.z1*1000/9.807);
+#if defined(LCM_SD1306_SUPPORT)
+	sd1306_show_num(1, 1, g_evb.step, 6, FONT_SIZE16);
+#endif
+
+	//qst_evb_plotsscom((int)g_evb.out.x*1000/9.807, (int)g_evb.out.y*1000/9.807, (int)g_evb.out.z*1000/9.807);
 }
 
 void qst_evb_acc_algo_step(void)
 {
+#if 0
 	float				norm;
 
 	if(g_evb.accel == QST_ACCEL_QMA6100)
@@ -676,6 +684,7 @@ void qst_evb_acc_algo_step(void)
 	QST_PRINTF("%f	%f	%f\r\n", g_evb.out.x, g_evb.out.y, g_evb.out.z);
 	norm = sqrtf(g_evb.out.data[0]*g_evb.out.data[0]+g_evb.out.data[1]*g_evb.out.data[1]+g_evb.out.data[2]*g_evb.out.data[2]);
 	g_evb.step = qst_step_algo(norm, 10);
+#endif
 }
 
 void qst_evb_demo_acc(void)
@@ -841,7 +850,6 @@ typedef struct
 } imu_offset_t;
 
 #define MAX_CALI_COUNT      51
-#define QST_ABS(X) 				((X) < 0.0f ? (-1.0f * (X)) : (X))
 static imu_offset_t imu_offset;
 static imu_data_t acc_cali_min,acc_cali_max;
 static int  cali_count = 0;
@@ -1142,7 +1150,35 @@ void qst_evb_imu_send(void)
 #endif
 }
 
-
+void qst_evb_sleep_check(float acc[3])
+{
+	static float acc_sum_last = 0;
+	static int static_count = 0;
+	float acc_sum_tmp = QST_ABS(acc[0])+QST_ABS(acc[1])+QST_ABS(acc[2]);
+	
+	if(QST_ABS((acc_sum_tmp-acc_sum_last)) < 0.5)
+	{
+		static_count++;
+		if(static_count > 2020)
+		{
+			static_count = 0;
+			QST_PRINTF("qst evb enter sleep! \n");
+			SysTick_Enable(0);
+			qmi8610_enableWakeOnMotion();
+			PWR_EnterSTANDBYMode();
+			SYSCLK_Config_WakeUp();
+			SysTick_Enable(1);
+			QST_PRINTF("qst evb exit sleep! \n");
+			qmi8610_disableWakeOnMotion();
+			qmi8610_init();
+		}
+	}
+	else
+	{
+		static_count = 0;
+	}
+	acc_sum_last = acc_sum_tmp;
+}
 
 void qst_evb_imu_irq1(void)
 {
@@ -1155,7 +1191,12 @@ void qst_evb_imu_irq2(void)
 	unsigned long long dt = HAL_GetTick();
 
 	if(dt_imu > 0)
+	{
 		qst_algo_imu_run(((float)(dt-dt_imu)/1000.0f));
+		// add by yangzhiqiang for sleep in	
+		qst_evb_sleep_check(algo_imu.acc);
+		// yangzhiqiang
+	}
 	dt_imu = dt;
 }
 
@@ -1212,7 +1253,7 @@ void qst_evb_demo_mag(void)
 	g_evb.out.sensor = QST_SENSOR_MAG;
 	g_evb.report_mode = QST_REPORT_POLLING;
 
-	SysTick_Enable(0);
+	//SysTick_Enable(0);
 	evb_setup_timer(TIM2, 50, ENABLE);
 	g_evb.tim2_func = qst_evb_mag_tim2;
 
@@ -1249,8 +1290,9 @@ int main(void)
 	//RTC_NVIC_Config();
 	//RTC_CheckAndConfig(&systmtime);
 
+#if defined(LCM_SD1306_SUPPORT)
 	sd1306_init();
-
+#endif
 	memset(&g_evb, 0, sizeof(g_evb));
 
 #if defined(QST_EVB_DEMO_ACC)

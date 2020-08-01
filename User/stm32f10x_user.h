@@ -36,6 +36,7 @@
 #include "ICAL.h"
 #include "qst_packet.h"
 
+#define QST_ABS(X) 				((X) < 0.0f ? (-1.0f * (X)) : (X))
 
 typedef void (*int_callback)(void);
 enum 

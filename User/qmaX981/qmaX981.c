@@ -23,7 +23,7 @@ typedef struct
 
 typedef struct
 {
-	qu8						salve;
+	qu8						slave;
 	qu8						chip_id;
 	qs32					lsb_1g;
 	qu8						layout;
@@ -81,9 +81,9 @@ qs32 qmaX981_writereg(qu8 reg_add, qu8 reg_dat)
 		ret = qmaX981_spi_write(reg_add, reg_dat);
 #else
 	#if defined(QST_USE_SW_I2C)
-		ret = qst_sw_writereg(g_qmaX981.salve<<1, reg_add, reg_dat);
+		ret = qst_sw_writereg(g_qmaX981.slave<<1, reg_add, reg_dat);
 	#else
-		ret = I2C_ByteWrite(g_qmaX981.salve<<1, reg_add, reg_dat);
+		ret = I2C_ByteWrite(g_qmaX981.slave<<1, reg_add, reg_dat);
 	#endif
 #endif
 	}
@@ -105,9 +105,9 @@ qs32 qmaX981_readreg(qu8 reg_add, qu8 *buf, qu16 num)
 		ret =  qmaX981_spi_read(reg_add, buf, num);
 #else
 		#if defined(QST_USE_SW_I2C)
-		ret =  qst_sw_readreg(g_qmaX981.salve<<1, reg_add, buf, num);
+		ret =  qst_sw_readreg(g_qmaX981.slave<<1, reg_add, buf, num);
 		#else
-		ret =  I2C_BufferRead(g_qmaX981.salve<<1, reg_add, buf, num);
+		ret =  I2C_BufferRead(g_qmaX981.slave<<1, reg_add, buf, num);
 		#endif
 #endif
 	}
@@ -924,7 +924,7 @@ qs8 qmaX981_init(void)
 
 	for(index=0; index<2; index++)
 	{
-		g_qmaX981.salve = slave_addr[0];
+		g_qmaX981.slave = slave_addr[0];
 		g_qmaX981.chip_id = qmaX981_chip_id();
 		if(g_qmaX981.chip_id == QMA7981_DEVICE_ID)
 		{			
@@ -936,7 +936,7 @@ qs8 qmaX981_init(void)
 	{
 #if defined(QMAX981_FIX_IIC)
 		qmaX981_writereg(0x20, 0x45);
-		g_qmaX981.salve = QMAX981_I2C_SLAVE_ADDR;
+		g_qmaX981.slave = QMAX981_I2C_SLAVE_ADDR;
 #endif
 		ret = qmaX981_initialize();
 		if(ret != QMAX981_SUCCESS)

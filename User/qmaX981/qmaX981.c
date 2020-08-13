@@ -730,8 +730,8 @@ void qmaX981_hand_raise_down(qs32 layout, qs32 int_map, qs32 enable)
 	qmaX981_writereg(0x35, 0x50);
 
 	qmaX981_readreg(0x16, &reg_0x16, 1);
-	qmaX981_readreg(0x19, &reg_0x16, 1);
-	qmaX981_readreg(0x1b, &reg_0x16, 1);
+	qmaX981_readreg(0x19, &reg_0x19, 1);
+	qmaX981_readreg(0x1b, &reg_0x1b, 1);
 	if(enable)
 	{
 		reg_0x16 |= 0x02|0x04;	// hand up, hand down

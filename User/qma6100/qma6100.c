@@ -811,10 +811,93 @@ void qma6100_tap_config(qs32 tap_type, qs32 int_map, qs32 enable)
 #endif
 
 #if defined(QMA6100_HAND_RAISE_DOWN)
-void qma6100_hand_raise_down(qs32 int_map, qs32 enable)
+void qma6100_hand_raise_down(qs32 layout, qs32 int_map, qs32 enable)
 {
 	qu8 reg_16,reg_19,reg_1b;
-	
+	//qu8 reg_24,reg_25;
+	qu8 reg_0x30, reg_0x34,reg_0x35,reg_0x42;		// swap x y
+
+	qu8 yz_th_sel = 4;
+	qs8 y_th = -3; //-2;				// -16 ~ 15
+	qu8 x_th = 6; 	// 0--7.5
+	qs8 z_th = 6;				// -8--7
+
+	reg_16 = reg_19 = reg_1b = 0;
+	//reg_24 = reg_25 = 0;
+	reg_0x34 = reg_0x35 = reg_0x42 = 0;
+	if(layout%2)
+	{
+		qma6100_readreg(0x42, &reg_0x42, 1);
+		reg_0x42 |= 0x80;		// 0x42 bit 7 swap x and y
+		qma6100_writereg(0x42, reg_0x42);
+	}
+	else
+	{
+		qma6100_readreg(0x42, &reg_0x42, 1);
+		reg_0x42 &= 0x7f;		// 0x42 bit 7 swap x and y
+		qma6100_writereg(0x42, reg_0x42);
+	}
+	qma6100_readreg(0x42, &reg_0x42, 1);
+	QMA6100_LOG("qma6100_hand_raise_down 0x42 = 0x%x\n", reg_0x42);
+
+	if((layout >=0) && (layout<=3))
+	{
+		z_th = 3;
+		if((layout == 2)||(layout == 3))
+			y_th = 3; 
+		else if((layout == 0)||(layout == 1))	
+			y_th = -3;
+	}
+	else if((layout >=4) && (layout<=7))
+	{
+		z_th = -3;
+		
+		if((layout == 6)||(layout == 7))
+			y_th = 3; 
+		else if((layout == 4)||(layout == 5))	
+			y_th = -3;
+	}
+	// 0x34 YZ_TH_SEL[7:5]	Y_TH[4:0], default 0x9d  (YZ_TH_SEL   4   9.0 m/s2 | Y_TH  -3  -3 m/s2)
+	//qmaX981_write_reg(0x34, 0x9d);	//|yz|>8 m/s2, y>-3 m/m2
+	if((y_th&0x80))
+	{
+		reg_0x34 |= yz_th_sel<<5;
+		reg_0x34 |= (y_th&0x0f)|0x10;
+		qma6100_writereg(0x34, reg_0x34);
+	}
+	else
+	{	
+		reg_0x34 |= yz_th_sel<<5;
+		reg_0x34 |= y_th;
+		qma6100_writereg(0x34, reg_0x34);	//|yz|>8m/s2, y<3 m/m2
+	}
+	//Z_TH<7:4>: -8~7, LSB 1 (unit : m/s2)	X_TH<3:0>: 0~7.5, LSB 0.5 (unit : m/s2) 
+	//qmaX981_write_reg(0x1e, 0x68);	//6 m/s2, 4 m/m2
+	qma6100_writereg(0x22, (0x19|(0x03<<6)));			// 12m/s2 , 0.5m/s2
+	qma6100_writereg(0x23, (0x7c|(0x03>>2)));
+	//qmaX981_write_reg(0x22, (0x19|(0x02<<6)));			// 12m/s2 , 0.5m/s2
+	//qmaX981_write_reg(0x23, (0x7c|(0x02)));
+
+	if((z_th&0x80))
+	{
+		reg_0x35 |= (x_th&0x0f);
+		reg_0x35 |= ((z_th<<4)|0x80);
+		qma6100_writereg(0x35, reg_0x35);
+	}
+	else
+	{
+		reg_0x35 |= (x_th&0x0f);
+		reg_0x35 |= (z_th<<4);
+		qma6100_writereg(0x35, reg_0x35);
+	}
+
+	// RAISE_WAKE_PERIOD*(1/ODR), default 0x81
+	qma6100_writereg(0x25, 0x50);
+	// add by yang, tep counter, raise wake, and tap detector,any motion by pass LPF
+	qma6100_readreg(0x30, &reg_0x30, 1);
+	qma6100_writereg(0x30, reg_0x30|0x40|0x3f);	// default 0x3f	
+	// add by yang, tep counter, raise wake, and tap detector,any motion by pass LPF
+
 	qma6100_readreg(0x16, &reg_16, 1);
 	qma6100_readreg(0x19, &reg_19, 1);
 	qma6100_readreg(0x1b, &reg_1b, 1);
@@ -1082,7 +1165,7 @@ static qs32 qma6100_initialize(void)
 	qma6100_writereg(0x56, 0x01);
 #else
 	// config by peili
-	qma6100_set_mode_odr(QMA6100_MODE_ACTIVE, QMA6100_MCLK_50K, QMA6100_DIV_512, QMA6100_LPF_16);
+	qma6100_set_mode_odr(QMA6100_MODE_ACTIVE, QMA6100_MCLK_50K, QMA6100_DIV_512, QMA6100_LPF_0);
 	//qma6100_set_mode_odr(QMA6100_MODE_ACTIVE, QMA6100_MCLK_500K, QMA6100_DIV_2048, QMA6100_LPF_16);
 	qma6100_set_range(QMA6100_RANGE_8G);
 	qma6100_writereg(0x4a, 0x20);
@@ -1126,7 +1209,7 @@ static qs32 qma6100_initialize(void)
 #endif
 
 #if defined(QMA6100_HAND_RAISE_DOWN)
-	qma6100_hand_raise_down(QMA6100_MAP_INT1, QMA6100_ENABLE);
+	qma6100_hand_raise_down(3, QMA6100_MAP_INT1, QMA6100_ENABLE);
 #endif
 
 #if defined(QMA6100_INT_LATCH)

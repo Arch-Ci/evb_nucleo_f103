@@ -650,7 +650,7 @@ void qst_evb_acc_tim2(void)
 	{
 		qma6100_read_acc_xyz(g_evb.out.data);
 #if defined(QMA6100_STEPCOUNTER)
-		g_evb.out.step = qma6100_read_stepcounter();
+		g_evb.step = qma6100_read_stepcounter();
 #endif
 	}
 	else if(g_evb.accel == QST_ACCEL_QMAX981)
@@ -1146,7 +1146,7 @@ void qst_evb_imu_send(void)
 	#endif
 #else
 	QST_PRINTF("%f	%f	%f	%f	%f	%f\n", algo_imu.acc[0],algo_imu.acc[1],algo_imu.acc[2],
-								algo_imu.gyro[0],algo_imu.gyro[1],algo_imu.gyro[2]);
+								algo_imu.gyr[0],algo_imu.gyr[1],algo_imu.gyr[2]);
 #endif
 }
 
@@ -1169,6 +1169,7 @@ void qst_evb_sleep_check(float acc[3])
 			SYSCLK_Config_WakeUp();
 			SysTick_Enable(1);
 			QST_PRINTF("qst evb exit sleep! \n");
+			qst_delay(5);
 			qmi8610_disableWakeOnMotion();
 			qmi8610_init();
 		}

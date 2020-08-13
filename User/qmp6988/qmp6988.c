@@ -21,7 +21,6 @@
 
 #define QMP6988_LOG		printf
 #define QMP6988_ERR		printf
-extern void qst_delay(unsigned int delay);
 
 #if !defined(QMP6988_CALC_INT)
 static float const Conv_A_S[10][2] = {

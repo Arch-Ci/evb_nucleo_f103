@@ -533,6 +533,7 @@ void qmi8610_disableWakeOnMotion(void)
 {
 	qmi8610_enableSensors(QMI8610_CTRL7_DISABLE_ALL);
 	qmi8610_write_reg(Qmi8610Register_Cal1_L, 0);
+	qmi8610_write_reg(Qmi8610Register_Cal1_H, 0);
 	qmi8610_doCtrl9Command(Ctrl9_ConfigureWakeOnMotion);
 }
 

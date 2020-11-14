@@ -436,29 +436,23 @@ qu32 qmaX981_read_stepcounter(void)
 }
 
 
-void qmaX981_reset_stepcounter(qu32 reset)
+void qmaX981_reset_stepcounter(void)
 {
 	qs32 ret = QMAX981_ERROR;
-	qu32 step_num = 0;
 	qs32 retry = 0;
 
-	step_num = qmaX981_read_stepcounter();
-	if(reset)
-	{
-		 while((ret != QMAX981_SUCCESS)&&(retry++<5))
-		 {	 
-			ret = qmaX981_writereg(0x13, 0x80);
-			if(ret == QMAX981_SUCCESS)
-			g_qmaX981.step_last = 0;
-		 }
+	retry = 0;
+	while((ret != QMAX981_SUCCESS)&&(retry++<5))
+	{	 
+		ret = qmaX981_writereg(0x13, 0x80);
 	}
-	else
-	{
-		 while((ret != QMAX981_SUCCESS)&&(retry++<5))
-		 {	 
-			ret = qmaX981_writereg(0x13, 0x7f);
-		 }
+	retry = 0;
+	ret = QMAX981_ERROR;
+	while((ret != QMAX981_SUCCESS)&&(retry++<5))
+	{	 
+		ret = qmaX981_writereg(0x13, 0x7f);
 	}
+
 }
 
 

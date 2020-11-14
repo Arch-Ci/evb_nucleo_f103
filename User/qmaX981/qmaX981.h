@@ -170,6 +170,7 @@ extern qs8 qmaX981_read_xyz(float *accData);
 extern qs32 qmaX981_read_raw(qs32 *rawData);
 #if defined(QMAX981_STEPCOUNTER)
 extern qu32 qmaX981_read_stepcounter(void);
+extern void qmaX981_reset_stepcounter(void);
 #endif
 #if defined(QMAX981_DATA_READY)
 extern void qmaX981_drdy_config(qs32 int_map, qs32 enable);

@@ -89,6 +89,15 @@ typedef		double							qd64;
 #define QMAX981_RANGE_16G			0x08
 #define QMAX981_RANGE_32G			0x0f
 
+#define QMAX981_FILTER_SIZE		4
+#if QMAX981_FILTER_SIZE
+typedef struct
+{
+	char	init;
+	int		array[QMAX981_FILTER_SIZE];
+} qmaX981_avg_t;
+#endif
+
 typedef enum
 {
 	QMAX981_DISABLE = 0,
@@ -156,10 +165,17 @@ typedef enum
 extern qs32 qmaX981_writereg(qu8 reg_add, qu8 reg_dat);
 extern qs32 qmaX981_readreg(qu8 reg_add, qu8 *buf, qu16 num);
 extern qs8 qmaX981_init(void);
+extern qs32 qmaX981_set_mode_odr(qs32 mode, qs32 mclk, qs32 div);
 extern qs8 qmaX981_read_xyz(float *accData);
 extern qs32 qmaX981_read_raw(qs32 *rawData);
 #if defined(QMAX981_STEPCOUNTER)
 extern qu32 qmaX981_read_stepcounter(void);
+#endif
+#if defined(QMAX981_DATA_READY)
+extern void qmaX981_drdy_config(qs32 int_map, qs32 enable);
+#endif
+#if defined(QMAX981_ANY_MOTION)
+extern void qmaX981_anymotion_config(qs32 int_map, qs32 enable);
 #endif
 #if defined(QMAX981_FIFO_FUNC)
 extern qs32 qmaX981_read_fifo(qu8 *fifo_buf);

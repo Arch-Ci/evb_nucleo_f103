@@ -244,13 +244,10 @@ void qma6100_dump_reg(void)
 	qs32 i=0;
 	qu8 reg_map[]=
 	{
-		0x09,0x0a,0x0b,0x0c,0x0e,
-		0x0f,0x10,0x11,0x12,0x13,0x14,0x15,
-		0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,
-		0x1D,0x1E,0x1F,0x20,0x30,0x32,
-		0x31,0x3e
-		//0x20,0x21,0x24,0x25,0x26,
-		//0x30,0x31,0x37,0x3e,0x4a,0x50,0x56
+    0x0f,0x10,0x11,0x09,0x0a,0x0b,0x0c,
+    //0x16,0x17,0x18,0x19,0x1a,0x1b,0x1c,
+    //0x20,0x21,0x30,0x31,0x37,0x3e,0x4a,0x50,0x56
+    0x12,0x13,0x14,0x15,0x1e,0x1f,0x20,0x30,0x32
 	};
 	QMA6100_LOG("qma6100_dump_reg\n");
 	for(i=0; i< sizeof(reg_map)/sizeof(reg_map[0]); i++)
@@ -300,18 +297,18 @@ void qma6100_drdy_config(qs32 int_map, qs32 enable)
 #if defined(QMA6100_FIFO_FUNC)
 static qu8 qma6100_fifo_reg[64*6];
 
-void qma6100_fifo_config(qs32 mode, qs32 int_map, qs32 enable)
+void qma6100_fifo_config(qma6100_fifo_mode fifo_mode, qs32 int_map, qs32 enable)
 {
 	qu8	reg_17, reg_1a, reg_1c=0;
 
-	QMA6100_LOG("qma6100_fifo_config mode:%d enable:%d\n", mode, enable);
+  QMA6100_LOG("qma6100_fifo_config mode:%d enable:%d\n", fifo_mode, enable);
 	qma6100_readreg(0x17, &reg_17, 1);
 	qma6100_readreg(0x1a, &reg_1a, 1);
 	qma6100_readreg(0x1c, &reg_1c, 1);
 
 	if(enable)
 	{
-		g_qma6100.fifo_mode = mode;
+		g_qma6100.fifo_mode = fifo_mode;
 		if(g_qma6100.fifo_mode == QMA6100_FIFO_MODE_FIFO)
 		{
 			qma6100_writereg(0x31, 0x40);
@@ -366,13 +363,13 @@ qs32 qma6100_read_fifo(qu8 *fifo_buf)
 	if(ret != QMA6100_SUCCESS)
 	{
 		QMA6100_ERR("qma6100_read_fifo state error\n");
-		return ret;
+		return 0;	//ret;
 	}
 	g_qma6100.fifo_len = databuf[0]&0x7f;
 	if(g_qma6100.fifo_len > 64)
 	{
 		QMA6100_ERR("qma6100_read_fifo depth(%d) error\n",g_qma6100.fifo_len);
-		return QMA6100_FAIL;
+		return 0;//QMA6100_FAIL;
 	}
 
 	if(fifo_buf)
@@ -398,8 +395,7 @@ qs32 qma6100_read_fifo(qu8 *fifo_buf)
 	{
 		ret = qma6100_writereg(0x3e, 0x07);
 	}
-// log fifo
-	return ret;
+	return g_qma6100.fifo_len;
 }
 
 void qma6100_exe_fifo(qu8 *fifo_buf)
@@ -501,37 +497,40 @@ qu32 qma6100_read_stepcounter(void)
 
 void qma6100_stepcounter_config(qs32 enable)
 {	
-	qs32 odr = 75;
+	qs32 odr = 100;   //75;
 	qu8 reg_14 = 0x00;
 	qu8 reg_15 = 0x00;
+	qu8 reg_1e = 0x00;
+	qu8 reg_32 = 0x00;
 
 	if(enable)
 	{
-		qma6100_writereg(0x12, 0x94);
+    qma6100_writereg(0x12, 0x8f);     // old 0x94
 	}
 	else
 	{
 		qma6100_writereg(0x12, 0x00);
 	}
 	qma6100_writereg(0x13, 0x7f);
-	// odr 116.7 Hz, 8.568ms
-  reg_14 = ((300*odr)/(1000))+1;      // 300 ms
-  reg_15 = (((2000/8)*odr)/1000)+1;   // 2000 ms
+
+	// odr 100 Hz, 10ms
+	reg_14 = ((280*odr)/(1000));      // about:280 ms
+	reg_15 = (((2000/8)*odr)/1000);   // 2000 ms
 	QMA6100_LOG("step time config 0x14=0x%x	0x15=0x%x\n", reg_14, reg_15);
 
 	qma6100_writereg(0x14, reg_14);
 	qma6100_writereg(0x15, reg_15);
 
-  //qma6100_writereg(0x1e, 0x08);
-
-	//qma6100_writereg(0x1f, 0x09);	// 0 step
-	//qma6100_writereg(0x1f, 0x29);	// 4 step
-	//qma6100_writereg(0x1f, 0x49);	// 8 step
-	//qma6100_writereg(0x1f, 0x69);	// 12 step
-	//qma6100_writereg(0x1f, 0x89);	// 16 step
-	qma6100_writereg(0x1f, 0xa9);	// 24 step
-	//qma6100_writereg(0x1f, 0xc9);	// 32 step
-	//qma6100_writereg(0x1f, 0xe9);	// 40 step
+	qma6100_readreg(0x1e, &reg_1e, 1);
+	reg_1e &= 0x3f;
+	qma6100_writereg(0x1e, (qu8)(reg_1e|QMA6100_STEP_LPF_2));   // default 0x08
+	// start count, p2p, fix peak
+	qma6100_writereg(0x1f, (qu8)QMA6100_STEP_START_24|0x10);
+	// select axis
+	qma6100_readreg(0x32, &reg_32, 1);
+	reg_32 &= 0xfc;
+	reg_32 |= (qu8)QMA6100_STEP_AXIS_XY;
+	qma6100_writereg(0x32, reg_32);
 }
 
 #if defined(QMA6100_STEP_INT)
@@ -614,6 +613,7 @@ void qma6100_anymotion_config(qs32 int_map, qs32 enable)
 	qu8 reg_0x1a = 0;
 	qu8 reg_0x1c = 0;
 	qu8 reg_0x2c = 0;
+	qu8 reg_0x30 = 0;
 #if defined(QMA6100_SIGNIFICANT_MOTION)
 	qu8 reg_0x19 = 0;
 	qu8 reg_0x1b = 0;
@@ -624,12 +624,14 @@ void qma6100_anymotion_config(qs32 int_map, qs32 enable)
 	qma6100_readreg(0x1a, &reg_0x1a, 1);
 	qma6100_readreg(0x1c, &reg_0x1c, 1);
 	qma6100_readreg(0x2c, &reg_0x2c, 1);
+  qma6100_readreg(0x30, &reg_0x30, 1);
 	reg_0x2c |= 0x00;
 
 	qma6100_writereg(0x2c, reg_0x2c);
 	qma6100_writereg(0x2e, 0x10);		// 0.488*16*32 = 250mg
 	// add by yang, tep counter, raise wake, and tap detector,any motion by pass LPF
-	qma6100_writereg(0x30, 0x80|0x40|0x3f);	// default 0x3f
+	reg_0x30 |= 0x80;
+	qma6100_writereg(0x30, reg_0x30); // default 0x3f
 	// add by yang, tep counter, raise wake, and tap detector,any motion by pass LPF
 	if(enable)
 	{

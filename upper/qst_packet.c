@@ -447,3 +447,21 @@ void qst_evb_plotsscom(int x, int y, int z)
 }
 #endif
 
+#if defined(QST_SWS_WAVEFORM)
+unsigned char sws_head[2]={0x03,0xfc};//∑¢ÀÕ÷°Õ∑
+unsigned char sws_tail[2]={0xfc,0x03};//∑¢ÀÕ÷°Œ≤
+
+void qst_evb_plot_sws(float data1[3], float data2[3])
+{
+	unsigned char *p1,*p2,*p3;
+	qst_send_str(sws_head, 2);
+	p1 = (unsigned char *)&data1[0];
+	p2 = (unsigned char *)&data1[1];
+	p3 = (unsigned char *)&data1[2];
+	printf("%c%c%c%c%c%c%c%c%c%c%c%c", p1[0],p1[1],p1[2],p1[3],
+						p2[0],p2[1],p2[2],p2[3],
+						p3[0],p3[1],p3[2],p3[3]);
+	qst_send_str(sws_tail, 2);
+}
+#endif
+

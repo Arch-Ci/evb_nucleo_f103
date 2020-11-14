@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F10X_MD SYSCLK_USE_HSI USE_STDPERIPH_DRIVER ST_NUCLEO_BOARD USE_I2C_1_PB8_9 QST_USE_SW_I2C</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Libraries\CMSIS;..\..\User;..\..\Libraries\FWlib\inc;..\..\User\i2c;..\..\User\spi;..\..\User\usart;..\..\User\qmaX981;..\..\User\qmc6308;..\..\User\qmcX983;..\..\User\qmp6988;..\..\User\qmi8610;..\..\User\px318j;..\..\User\SysTick;..\..\User\flash;..\..\User\Led;..\..\User\qma6100;..\..\User\qmi8658;..\..\User\sd1306;..\..\algo\fusion;..\..\algo\MagCali;..\..\algo\compass;..\..\upper</IncludePath>
+              <IncludePath>..\..\Libraries\CMSIS;..\..\User;..\..\Libraries\FWlib\inc;..\..\User\i2c;..\..\User\spi;..\..\User\usart;..\..\User\qmaX981;..\..\User\qmc6308;..\..\User\qmcX983;..\..\User\qmp6988;..\..\User\qmi8610;..\..\User\px318j;..\..\User\qmt200;..\..\User\SysTick;..\..\User\flash;..\..\User\Led;..\..\User\qma6100;..\..\User\qmi8658;..\..\User\sd1306;..\..\User\tim;..\..\algo\fusion;..\..\algo\compass;..\..\upper;..\..\algo\compass2</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -546,57 +546,6 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\main.c</FilePath>
-              <FileOption>
-                <CommonProperty>
-                  <UseCPPCompiler>2</UseCPPCompiler>
-                  <RVCTCodeConst>0</RVCTCodeConst>
-                  <RVCTZI>0</RVCTZI>
-                  <RVCTOtherData>0</RVCTOtherData>
-                  <ModuleSelection>0</ModuleSelection>
-                  <IncludeInBuild>2</IncludeInBuild>
-                  <AlwaysBuild>2</AlwaysBuild>
-                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
-                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
-                  <PublicsOnly>2</PublicsOnly>
-                  <StopOnExitCode>11</StopOnExitCode>
-                  <CustomArgument></CustomArgument>
-                  <IncludeLibraryModules></IncludeLibraryModules>
-                  <ComprImg>1</ComprImg>
-                </CommonProperty>
-                <FileArmAds>
-                  <Cads>
-                    <interw>2</interw>
-                    <Optim>0</Optim>
-                    <oTime>2</oTime>
-                    <SplitLS>2</SplitLS>
-                    <OneElfS>2</OneElfS>
-                    <Strict>2</Strict>
-                    <EnumInt>2</EnumInt>
-                    <PlainCh>2</PlainCh>
-                    <Ropi>2</Ropi>
-                    <Rwpi>2</Rwpi>
-                    <wLevel>0</wLevel>
-                    <uThumb>2</uThumb>
-                    <uSurpInc>2</uSurpInc>
-                    <uC99>2</uC99>
-                    <uGnu>2</uGnu>
-                    <useXO>2</useXO>
-                    <v6Lang>0</v6Lang>
-                    <v6LangP>0</v6LangP>
-                    <vShortEn>2</vShortEn>
-                    <vShortWch>2</vShortWch>
-                    <v6Lto>2</v6Lto>
-                    <v6WtE>2</v6WtE>
-                    <v6Rtti>2</v6Rtti>
-                    <VariousControls>
-                      <MiscControls></MiscControls>
-                      <Define>LCM_SD1306_SUPPORT</Define>
-                      <Undefine></Undefine>
-                      <IncludePath></IncludePath>
-                    </VariousControls>
-                  </Cads>
-                </FileArmAds>
-              </FileOption>
             </File>
             <File>
               <FileName>stm32f10x_it.c</FileName>
@@ -642,11 +591,6 @@
               <FileName>qmaX981.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\qmaX981\qmaX981.c</FilePath>
-            </File>
-            <File>
-              <FileName>qmaX981_algo.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\qmaX981\qmaX981_algo.c</FilePath>
             </File>
             <File>
               <FileName>qmcX983.c</FileName>
@@ -703,6 +647,21 @@
               <FileType>1</FileType>
               <FilePath>..\..\User\sd1306\sd1306.c</FilePath>
             </File>
+            <File>
+              <FileName>bsp_advance_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\evb_nucleo_f103\User\tim\bsp_advance_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>qmt200.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\qmt200\qmt200.c</FilePath>
+            </File>
+            <File>
+              <FileName>qst_sw_i2c_2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\User\i2c\qst_sw_i2c_2.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -736,12 +695,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>magcali</GroupName>
+          <GroupName>compass</GroupName>
           <Files>
             <File>
               <FileName>qst_lib_compass.lib</FileName>
               <FileType>4</FileType>
               <FilePath>..\..\algo\compass\qst_lib_compass.lib</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>compass2</GroupName>
+          <Files>
+            <File>
+              <FileName>qst_compass2.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\algo\compass2\qst_compass2.lib</FilePath>
             </File>
           </Files>
         </Group>

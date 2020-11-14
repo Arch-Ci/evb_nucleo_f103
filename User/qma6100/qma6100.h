@@ -43,7 +43,7 @@ typedef		double								qd64;
 //#define QMA6100_NO_MOTION
 //#define QMA6100_SIGNIFICANT_MOTION
 
-//#define QMA6100_STEPCOUNTER
+#define QMA6100_STEPCOUNTER
 //#define QMA6100_STEP_INT
 //#define QMA6100_SIGNIFICANT_STEP_INT
 
@@ -180,6 +180,36 @@ typedef enum
 	QMA6100_LPF_RESERVED = 0xff
 }qma6100_lpf;
 
+typedef enum
+{
+	QMA6100_STEP_LPF_0 = (0x00<<6),
+	QMA6100_STEP_LPF_2 = (0x01<<6),
+	QMA6100_STEP_LPF_4 = (0x02<<6),
+	QMA6100_STEP_LPF_8 = (0x03<<6),
+	QMA6100_STEP_LPF_RESERVED = 0xff
+}qma6100_step_lpf;
+
+typedef enum
+{
+	QMA6100_STEP_AXIS_ALL = 0x00,
+	QMA6100_STEP_AXIS_YZ = 0x01,
+	QMA6100_STEP_AXIS_XZ = 0x02,
+	QMA6100_STEP_AXIS_XY = 0x03,
+	QMA6100_STEP_AXIS_RESERVED = 0xff
+}qma6100_step_axis;
+
+typedef enum
+{
+  QMA6100_STEP_START_0 = 0x00,
+  QMA6100_STEP_START_4 = 0x20,
+  QMA6100_STEP_START_8 = 0x40,
+  QMA6100_STEP_START_12 = 0x60,
+  QMA6100_STEP_START_16 = 0x80,
+  QMA6100_STEP_START_24 = 0xa0,
+  QMA6100_STEP_START_32 = 0xc0,
+  QMA6100_STEP_START_40 = 0xe0,
+  QMA6100_STEP_START_RESERVED = 0xff
+}qma6100_step_start_cnt;
 
 extern qs32 qma6100_writereg(qu8 reg_add,qu8 reg_dat);
 extern qs32 qma6100_readreg(qu8 reg_add,qu8 *buf,qu16 num);
@@ -193,7 +223,7 @@ extern qs32 qma6100_read_acc_xyz(float *accData);
 extern void qma6100_drdy_config(qs32 int_map, qs32 enable);
 #endif
 #if defined(QMA6100_FIFO_FUNC)
-extern void qma6100_fifo_config(qs32 mode, qs32 int_map, qs32 enable);
+extern void qma6100_fifo_config(qma6100_fifo_mode fifo_mode, qs32 int_map, qs32 enable);
 extern qs32 qma6100_read_fifo(qu8 *fifo_buf);
 extern void qma6100_exe_fifo(qu8 *fifo_buf);
 extern qu8* qma6100_get_fifo(void);

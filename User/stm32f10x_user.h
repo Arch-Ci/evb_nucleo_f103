@@ -18,6 +18,7 @@
 #include "bsp_usart.h"
 #include "bsp_i2c.h"
 #include "qst_sw_i2c.h"
+#include "qst_sw_i2c_2.h"
 #include "bsp_spi.h"
 #include "bsp_flash.h"
 #include "sd1306.h"
@@ -30,10 +31,12 @@
 #include "qmi8658.h"
 #include "qmc6308.h"
 #include "px318j.h"
+#include "qmt200.h"
 
 #include "qst_fusion.h"
 //#include "../../algo/imu/qst_algo_imu.h"
 #include "ICAL.h"
+#include "ical2.h"
 #include "qst_packet.h"
 
 #define QST_ABS(X) 				((X) < 0.0f ? (-1.0f * (X)) : (X))
@@ -48,15 +51,27 @@ enum
 
 typedef enum
 {
-	QST_SENSOR_NONE,
-	QST_SENSOR_ACCEL,
-	QST_SENSOR_MAG,
-	QST_SENSOR_GYRO,
-	QST_SENSOR_PRESS,
-	QST_SENSOR_LIGHT,	
-	QST_SENSOR_ACCGYRO,
+	QST_NUCLEO_INT_NONE = 0x00,
+	QST_NUCLEOPC7_IMU_INT1 = 0x01,
+	QST_NUCLEOPA9_IMU_INT2 = 0x02,
+	QST_NUCLEOPB4_ACC_INT1 = 0x04,
+	QST_NUCLEOPB10_ACC_INT2 = 0x08,
+	QST_NUCLEOPB3_INT = 0x10,
+	QST_NUCLEO_INT_END = 0xff
+}qst_nucleo_int;
 
-	QST_SENSOR_TOTAL
+typedef enum
+{
+	QST_SENSOR_NONE,
+	QST_SENSOR_ACCEL = 0x01,
+	QST_SENSOR_MAG = 0x02,
+	QST_SENSOR_GYRO = 0x04,
+	QST_SENSOR_PRESS = 0x08,
+	QST_SENSOR_LIGHT = 0x10,	
+	QST_SENSOR_ACCGYRO = 0x20,
+	QST_SENSOR_TEMPEARTURE = 0x40,
+
+	QST_SENSOR_TOTAL = 0xff
 } qst_sensor_type;
 
 typedef enum
@@ -122,7 +137,7 @@ typedef struct
 typedef struct
 {
 	int sensor;
-	float timestamp;
+	unsigned long long timestamp;
     union {
         float data[3];
         struct {
@@ -144,6 +159,7 @@ typedef struct
 
 typedef struct
 {
+	qst_sensor_type		init_sensor;
 	qst_acc_type		accel;
 	qst_mag_type		mag;
 	qst_gyro_type		gyro;
@@ -157,26 +173,20 @@ typedef struct
 	int_callback		irq1_func;
 	int_callback		irq2_func;
 
+	unsigned char		tim1_flag;
+	unsigned char		tim2_flag;
+	unsigned char		tim3_flag;
+	unsigned char		tim4_flag;
+	int_callback		tim1_func;
 	int_callback		tim2_func;
 	int_callback		tim3_func;
 	int_callback		tim4_func;
 
 	sensors_vec_t		out;
 	sensors_vec_t		out2;
+	sensors_vec_t		out3;
 	unsigned int		step;
 } qst_evb_t;
-
-
-
-typedef struct
-{
-	float			acc_bis[3];
-	float			gyro_bis[3];
-	short			imu_cali;
-
-	TRANSFORM_T		mag;
-	short			mag_accuracy;
-} qst_evb_offset_t;
 
 
 #ifdef __cplusplus

@@ -1,38 +1,0 @@
-Dependencies for Project 'qst_lib_imu', Target 'Imu': (DO NOT MODIFY !)
-F (..\..\algo\imu\FastMath.cpp)(0x5C3DA138)(--cpp -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections-I.\RTE\_Imu-IC:\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DSTM32F10X_MD-o .\objects\fastmath.o --omf_browse .\objects\fastmath.crf --depend .\objects\fastmath.d)
-I (..\..\algo\imu\FastMath.h)(0x5D22D174)
-F (..\..\algo\imu\imualgo.cpp)(0x5D6F55EE)(--cpp -c --cpu Cortex-M3 -D__MICROLIB -g -O0 --apcs=interwork --split_sections-I.\RTE\_Imu-IC:\Keil_v5\Arm\Packs\Keil\STM32F1xx_DFP\2.3.0\Device\Include-IC:\Keil_v5\ARM\CMSIS\Include-D__UVISION_VERSION="528" -DSTM32F10X_MD-o .\objects\imualgo.o --omf_browse .\objects\imualgo.crf --depend .\objects\imualgo.d)
-I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\string)(0x5CEB79E0)
-I (C:\Keil_v5\ARM\ARMCC\include\iosfwd)(0x5CEB79DE)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_defs.h)(0x5CEB79DA)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_config.h)(0x5CEB79DA)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\config.h)(0x5CEB79D8)
-I (C:\Keil_v5\ARM\ARMCC\include\cwchar)(0x5CEB79D6)
-I (C:\Keil_v5\ARM\ARMCC\include\wchar.h)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\limits)(0x5CEB79E0)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_math.h)(0x5CEB79DC)
-I (C:\Keil_v5\ARM\ARMCC\include\cmath)(0x5CEB79DE)
-I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x5CEB79D6)
-I (C:\Keil_v5\ARM\ARMCC\include\cfloat)(0x5CEB79E0)
-I (C:\Keil_v5\ARM\ARMCC\include\float.h)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\climits)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\limits.h)(0x5CEB79D6)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_algobase.h)(0x5CEB79D8)
-I (C:\Keil_v5\ARM\ARMCC\include\utility)(0x5CEB79D6)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_iterator.h)(0x5CEB79DA)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_iterbase.h)(0x5CEB79DA)
-I (C:\Keil_v5\ARM\ARMCC\include\cstddef)(0x5CEB79D6)
-I (C:\Keil_v5\ARM\ARMCC\include\stddef.h)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_strref.h)(0x5CEB79D8)
-I (C:\Keil_v5\ARM\ARMCC\include\memory)(0x5CEB79D6)
-I (C:\Keil_v5\ARM\ARMCC\include\new)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\exception)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_mutex.h)(0x5CEB79D8)
-I (C:\Keil_v5\ARM\ARMCC\include\cstring)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x5CEB79E2)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_traits.h)(0x5CEB79DC)
-I (C:\Keil_v5\ARM\ARMCC\include\cstdio)(0x5CEB79D4)
-I (C:\Keil_v5\ARM\ARMCC\include\rw\_error.h)(0x5CEB79DA)
-I (..\..\algo\imu\FastMath.h)(0x5D22D174)
-I (..\..\algo\imu\imualgo.h)(0x5D2BDB90)

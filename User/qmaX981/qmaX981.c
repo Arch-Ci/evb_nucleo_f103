@@ -30,6 +30,9 @@ typedef struct
 	qst_convert		cvt;
 	qu8						fifo_mode;
 	qs32					fifo_len;
+#if QMAX981_FILTER_SIZE
+	qmaX981_avg_t			avg[3];	
+#endif
 } qmaX981_data;
 
 static const qst_convert qst_map[] = 
@@ -432,6 +435,33 @@ qu32 qmaX981_read_stepcounter(void)
 	return step_num;
 }
 
+
+void qmaX981_reset_stepcounter(qu32 reset)
+{
+	qs32 ret = QMAX981_ERROR;
+	qu32 step_num = 0;
+	qs32 retry = 0;
+
+	step_num = qmaX981_read_stepcounter();
+	if(reset)
+	{
+		 while((ret != QMAX981_SUCCESS)&&(retry++<5))
+		 {	 
+			ret = qmaX981_writereg(0x13, 0x80);
+			if(ret == QMAX981_SUCCESS)
+			g_qmaX981.step_last = 0;
+		 }
+	}
+	else
+	{
+		 while((ret != QMAX981_SUCCESS)&&(retry++<5))
+		 {	 
+			ret = qmaX981_writereg(0x13, 0x7f);
+		 }
+	}
+}
+
+
 void qmaX981_stepcounter_config(qs32 enable)
 {	
 	qs32 odr = 141;
@@ -558,7 +588,8 @@ void qmaX981_anymotion_config(qs32 int_map, qs32 enable)
 	reg_0x2c |= 0x00;
 
 	qmaX981_writereg(0x2c, reg_0x2c);
-	qmaX981_writereg(0x2e, 0x10);		// 0.488*16*32 = 250mg
+	qmaX981_writereg(0x2e, 0x1a);		// 0.488*16*32 = 250mg
+	//qmaX981_writereg(0x2e, 0x08);		// 0.488 * LSB * 32   mg
 	if(enable)
 	{
 		reg_0x18 |= 0x07;
@@ -806,6 +837,35 @@ void qmaX981_irq_hdlr(void)
 }
 
 
+#if QMAX981_FILTER_SIZE
+short qmaX981_avg_run(qmaX981_avg_t *filter, int in)
+{
+	int 	i;
+	int 	sum = 0;
+	short 	avg = 0;
+
+	if(filter->init == 0)
+	{
+		for(i=0; i<QMAX981_FILTER_SIZE; i++)
+		{
+			filter->array[i] = in;
+		}
+		filter->init = 1;
+	}
+
+	sum = 0;
+	for(i=1; i<QMAX981_FILTER_SIZE; i++)
+	{
+		sum += filter->array[i];
+		filter->array[i-1] = filter->array[i];
+	}
+	filter->array[QMAX981_FILTER_SIZE-1] = in;
+	sum += in;
+	avg = (short)(sum/QMAX981_FILTER_SIZE);
+
+	return avg;
+}
+#endif
 
 qs32 qmaX981_read_raw(qs32 *rawData)
 {
@@ -825,6 +885,11 @@ qs32 qmaX981_read_raw(qs32 *rawData)
 	rawData[0] = rawData[0]>>2;
 	rawData[1] = rawData[1]>>2;
 	rawData[2] = rawData[2]>>2;
+#if QMAX981_FILTER_SIZE
+	rawData[0] = qmaX981_avg_run(&g_qmaX981.avg[0], rawData[0]);
+	rawData[1] = qmaX981_avg_run(&g_qmaX981.avg[1], rawData[1]);
+	rawData[2] = qmaX981_avg_run(&g_qmaX981.avg[2], rawData[2]);
+#endif
 
 	return QMAX981_SUCCESS;
 }

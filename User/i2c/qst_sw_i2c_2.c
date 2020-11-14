@@ -1,51 +1,23 @@
-/**
-  ******************************************************************************
-  * @file    qmaX981_sw_i2c.c
-  * @author  yzq
-  * @version V1.0
-  * @date    2018-05-01
-  * @brief   软件IIC 驱动
-  ******************************************************************************
-  * @attention
-  *
-  * 实验平台:秉火 F103-指南者 STM32 开发板 
-  * 论坛    :http://www.firebbs.cn
-  * 淘宝    :https://fire-stm32.taobao.com
-  *
-  ******************************************************************************
-  */
 
-#include "qst_sw_i2c.h"
+#include "qst_sw_i2c_2.h"
 
-/* 定义I2C总线连接的GPIO端口, 用户只需要修改下面4行代码即可任意改变SCL和SDA的引脚 */
-#define GPIO_PORT_I2C	GPIOB			/* GPIO端口 */
-#define RCC_I2C_PORT 	RCC_APB2Periph_GPIOB		/* GPIO端口时钟 */
-#if defined(USE_I2C_1_PB6_7)
-#define I2C_SCL_PIN		GPIO_Pin_6			/* 连接到SCL时钟线的GPIO */
-#define I2C_SDA_PIN		GPIO_Pin_7			/* 连接到SDA数据线的GPIO */
-#endif
-#if defined(USE_I2C_1_PB8_9)
-#define I2C_SCL_PIN		GPIO_Pin_8			/* 连接到SCL时钟线的GPIO */
-#define I2C_SDA_PIN		GPIO_Pin_9			/* 连接到SDA数据线的GPIO */
-#endif
 
-#if defined(USE_I2C_1_PB6_7)
-#define I2C_SCL_INPUT()				{GPIO_PORT_I2C->CRL&=0XF0FFFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)8<<24);}
-#define I2C_SCL_OUTPUT()			{GPIO_PORT_I2C->CRL&=0XF0FFFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)3<<24);}
-#define I2C_SDA_INPUT()				{GPIO_PORT_I2C->CRL&=0X0FFFFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)8<<28);}	
-#define I2C_SDA_OUTPUT() 			{GPIO_PORT_I2C->CRL&=0X0FFFFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)3<<28);}	
-#endif
-#if defined(USE_I2C_1_PB8_9)
-#define I2C_SCL_INPUT()				{GPIO_PORT_I2C->CRH&=0XFFFFFFF0;GPIO_PORT_I2C->CRH|=((uint32_t)8);}	
-#define I2C_SCL_OUTPUT() 			{GPIO_PORT_I2C->CRH&=0XFFFFFFF0;GPIO_PORT_I2C->CRH|=((uint32_t)3);}		
-#define I2C_SDA_INPUT()				{GPIO_PORT_I2C->CRH&=0XFFFFFF0F;GPIO_PORT_I2C->CRH|=((uint32_t)8<<4);}	
-#define I2C_SDA_OUTPUT() 			{GPIO_PORT_I2C->CRH&=0XFFFFFF0F;GPIO_PORT_I2C->CRH|=((uint32_t)3<<4);}
-#endif
-#define I2C_SCL_1()					GPIO_PORT_I2C->BSRR = I2C_SCL_PIN				/* SCL = 1 */
-#define I2C_SCL_0()					GPIO_PORT_I2C->BRR = I2C_SCL_PIN				/* SCL = 0 */
-#define I2C_SDA_1()					GPIO_PORT_I2C->BSRR = I2C_SDA_PIN				/* SDA = 1 */
-#define I2C_SDA_0()					GPIO_PORT_I2C->BRR = I2C_SDA_PIN				/* SDA = 0 */
-#define I2C_SDA_READ()				((GPIO_PORT_I2C->IDR & I2C_SDA_PIN) != 0)		/* 读SDA口线状态 */
+#define GPIO_PORT_I2C	GPIOA			/* GPIO端口 */
+#define RCC_I2C_PORT 	RCC_APB2Periph_GPIOA		/* GPIO端口时钟 */
+
+#define I2C_SCL_PIN		GPIO_Pin_5
+#define I2C_SDA_PIN		GPIO_Pin_6
+
+#define I2C_SCL_INPUT()			{GPIO_PORT_I2C->CRL&=0XFF0FFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)8<<20);}
+#define I2C_SCL_OUTPUT()		{GPIO_PORT_I2C->CRL&=0XFF0FFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)3<<20);}
+#define I2C_SDA_INPUT()			{GPIO_PORT_I2C->CRL&=0XF0FFFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)8<<24);}	
+#define I2C_SDA_OUTPUT() 		{GPIO_PORT_I2C->CRL&=0XF0FFFFFF;GPIO_PORT_I2C->CRL|=((uint32_t)3<<24);}	
+
+#define I2C_SCL_1()				GPIO_PORT_I2C->BSRR = I2C_SCL_PIN				/* SCL = 1 */
+#define I2C_SCL_0()				GPIO_PORT_I2C->BRR = I2C_SCL_PIN				/* SCL = 0 */
+#define I2C_SDA_1()				GPIO_PORT_I2C->BSRR = I2C_SDA_PIN				/* SDA = 1 */
+#define I2C_SDA_0()				GPIO_PORT_I2C->BRR = I2C_SDA_PIN				/* SDA = 0 */
+#define I2C_SDA_READ()			((GPIO_PORT_I2C->IDR & I2C_SDA_PIN) != 0)		/* 读SDA口线状态 */
 
 static void i2c_Ack(void);
 static void i2c_NAck(void);
@@ -78,7 +50,6 @@ static void i2c_delay_us(int nus)
 #endif
 	}
 }
-
 
 #define i2c_Delay()		i2c_delay_us(2)
 
@@ -271,7 +242,7 @@ static void i2c_NAck(void)
 *	返 回 值: 无
 *********************************************************************************************************
 */
-void i2c_sw_gpio_config(void)
+void i2c_sw_gpio_config_2(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -287,7 +258,7 @@ void i2c_sw_gpio_config(void)
 }
 
 
-uint8_t qst_sw_writereg(uint8_t slave, uint8_t reg_add,uint8_t reg_dat)
+uint8_t qst_sw_writereg_2(uint8_t slave, uint8_t reg_add,uint8_t reg_dat)
 {
 	i2c_Start();
 	i2c_SendByte(slave);
@@ -310,7 +281,7 @@ uint8_t qst_sw_writereg(uint8_t slave, uint8_t reg_add,uint8_t reg_dat)
 	return 1;
 }
 
-uint8_t qst_sw_writeregs(uint8_t slave, uint8_t reg_add, uint8_t *reg_dat, uint8_t len)
+uint8_t qst_sw_writeregs_2(uint8_t slave, uint8_t reg_add, uint8_t *reg_dat, uint8_t len)
 {
 	uint8_t i;
 
@@ -338,7 +309,7 @@ uint8_t qst_sw_writeregs(uint8_t slave, uint8_t reg_add, uint8_t *reg_dat, uint8
 	return 1;
 }
 
-uint8_t qst_sw_readreg(uint8_t slave, uint8_t reg_add, uint8_t *buf, uint16_t num)
+uint8_t qst_sw_readreg_2(uint8_t slave, uint8_t reg_add, uint8_t *buf, uint16_t num)
 {
 	//uint8_t ret;
 	uint16_t i;
@@ -371,109 +342,5 @@ uint8_t qst_sw_readreg(uint8_t slave, uint8_t reg_add, uint8_t *buf, uint16_t nu
 
 	return 1;
 }
-
-
-
-uint8_t qmt200_sw_readreg(uint8_t slave, uint8_t reg_add, uint8_t *buf, uint16_t num)
-{
-	//uint8_t ret;
-	uint16_t i;
-
-	i2c_Start();
-	i2c_SendByte(slave);
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}
-	i2c_SendByte(reg_add);
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}
-	i2c_SendByte(0x00);
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}	
-	i2c_SendByte(0x00);
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}
-	i2c_Stop();
-	i2c_delay_us(100);
-
-	i2c_Start();
-	i2c_SendByte(slave|0x01);
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}
-
-	for(i=0;i<(num-1);i++){
-		*buf=i2c_ReadByte(1);
-		buf++;
-	}
-	*buf=i2c_ReadByte(0);
-	i2c_Stop();
-
-	return 1;
-}
-
-
-
-
-#if 1//defined(QST_CONFIG_JHM1200)
-uint8_t jhm1200_iic_write(uint8_t Addr, uint8_t* Buff, uint8_t Len)
-{
-	uint8_t i;
-
-	i2c_Start();
-	i2c_SendByte(0xf0);
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}
-	i2c_SendByte(Addr);	
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}
-	for(i=0;i<Len;i++)
-	{
-		i2c_SendByte(Buff[i]);	
-		if(i2c_WaitAck())
-		{
-			return 0;
-		}
-	}
-	i2c_Stop();
-
-	return 1;
-}
-
-
-uint8_t jhm1200_iic_read(uint8_t *pData, uint16_t Length)
-{
-	uint8_t i;
-
-	i2c_Start();
-	i2c_SendByte(0xf1);
-	if(i2c_WaitAck())
-	{
-		return 0;
-	}
-
-	for(i=0;i<(Length-1);i++){
-		*pData=i2c_ReadByte(1);
-		pData++;
-	}
-	*pData=i2c_ReadByte(0);
-	i2c_Stop();
-
-	return 1;
-
-}
-#endif
 
 

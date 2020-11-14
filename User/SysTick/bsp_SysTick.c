@@ -141,4 +141,15 @@ __weak unsigned long long HAL_GetTick(void)
 }
 
 
+void delay_ms(u32 ms)
+{
+    unsigned long long tickout = uwTick+ms;
+    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;        //使能，减到零是无动作，采用外部时钟源
+    while(uwTick < tickout)
+    {
+    }
+    SysTick->CTRL &= ~ SysTick_CTRL_ENABLE_Msk;    //关闭计数器
+}
+
+
 /*********************************************END OF FILE**********************/

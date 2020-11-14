@@ -26,7 +26,7 @@
 //#define QST_IMU_ANO_TC
 // sscom ²¨ÐÎÍ¼
 //#define QST_SSCOM_WAVEFORM
-
+//#define QST_SWS_WAVEFORM
 
 typedef struct
 {
@@ -91,6 +91,9 @@ void qst_send_version(unsigned char hardware_type, unsigned short hardware_ver,u
 #endif
 #if defined(QST_SSCOM_WAVEFORM)
 void qst_evb_plotsscom(int x, int y, int z);
+#endif
+#if defined(QST_SWS_WAVEFORM)
+void qst_evb_plot_sws(float data1[3], float data2[3]);
 #endif
 #ifdef __cplusplus
 }

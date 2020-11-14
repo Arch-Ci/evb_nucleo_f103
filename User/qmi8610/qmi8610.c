@@ -477,11 +477,11 @@ void qmi8610_doCtrl9Command(enum qmi8610_Ctrl9Command cmd)
 	//}
 
 	//g_fisDriverHal->waitForEvent(Qmi8610_Int1, FisInt_low);
-	//qst_delay(300);
+	//qmi8610_delay(300);
 
 	qmi8610_write_reg(Qmi8610Register_Ctrl9, cmd);
 	//g_fisDriverHal->waitForEvent(Qmi8610_Int1, FisInt_high);
-	//qst_delay(300);
+	qmi8610_delay(150);
 
 	// Check that command has been executed
 	while(((status & QMI8610_STATUS1_CMD_DONE)==0)&&(count<1000))
@@ -490,12 +490,11 @@ void qmi8610_doCtrl9Command(enum qmi8610_Ctrl9Command cmd)
 		qmi8610_delay(1);
 		count++;
 	}
-
 	qmi8610_printf("count = %d\n", count);
 	//assert(status & QMI8610_STATUS1_CMD_DONE);
 
 	//g_fisDriverHal->waitForEvent(Qmi8610_Int1, FisInt_low);
-	//qst_delay(300);
+	//qmi8610_delay(300);
 
 	//if(oisEnabled)
 	//{
@@ -515,9 +514,8 @@ void qmi8610_enableWakeOnMotion(void)
 	const unsigned char blankingTimeMask = 0x3F;
 
 	qmi8610_enableSensors(QMI8610_CTRL7_DISABLE_ALL);
-	qmi8610_config_acc(Qmi8610AccRange_8g, Qmi8610AccOdr_256Hz, Qmi8610Lpf_Enable, Qmi8610Hpf_Disable);
-	//qmi8610_config_acc(AccRange_2g, AccOdr_LowPower_25Hz, Qmi8610Lpf_Disable, Qmi8610Hpf_Disable);
-	qmi8610_config_gyro(Qmi8610GyrRange_1024dps, Qmi8610GyrOdr_256Hz, Qmi8610Lpf_Enable, Qmi8610Hpf_Disable);
+	qmi8610_config_acc(Qmi8610AccRange_2g, Qmi8610AccOdr_LowPower_25Hz, Qmi8610Lpf_Disable, Qmi8610Hpf_Disable);
+	//qmi8610_config_gyro(Qmi8610GyrRange_1024dps, Qmi8610GyrOdr_256Hz, Qmi8610Lpf_Enable, Qmi8610Hpf_Disable);
 
 	womCmd[0] = Qmi8610Register_Cal1_L;		//WoM Threshold: absolute value in mg (with 1mg/LSB resolution)
 	womCmd[1] = threshold;
@@ -535,6 +533,9 @@ void qmi8610_disableWakeOnMotion(void)
 	qmi8610_write_reg(Qmi8610Register_Cal1_L, 0);
 	qmi8610_write_reg(Qmi8610Register_Cal1_H, 0);
 	qmi8610_doCtrl9Command(Ctrl9_ConfigureWakeOnMotion);
+	// add by yangzhiqiang	
+	qmi8610_Config_apply(&qmi8610_set);
+	// yangzhiqiang
 }
 
 
@@ -690,9 +691,9 @@ unsigned char qmi8610_init(void)
 	{
 		qmi8610_set.inputSelection = QMI8610_CONFIG_ACCGYR_ENABLE;
 		qmi8610_set.accRange = Qmi8610AccRange_8g;
-		qmi8610_set.accOdr = Qmi8610AccOdr_1024Hz;
+		qmi8610_set.accOdr = Qmi8610AccOdr_256Hz;
 		qmi8610_set.gyrRange = Qmi8610GyrRange_1024dps;
-		qmi8610_set.gyrOdr = Qmi8610GyrOdr_1024Hz;
+		qmi8610_set.gyrOdr = Qmi8610GyrOdr_256Hz;
 		qmi8610_set.magOdr = Qmi8610MagOdr_32Hz;
 		qmi8610_set.magDev = MagDev_AK8963;
 		qmi8610_set.aeOdr = Qmi8610AeOdr_32Hz;

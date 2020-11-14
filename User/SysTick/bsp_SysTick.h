@@ -12,6 +12,6 @@ void SysTick_Init(uint32_t ms);
 void SysTick_Enable(unsigned char enable);
 void HAL_IncTick(void);
 unsigned long long HAL_GetTick(void);
-
+void delay_ms(u32 ms);
 
 #endif /* __SYSTICK_H */

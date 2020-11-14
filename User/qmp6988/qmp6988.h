@@ -4,6 +4,7 @@
 #include "bsp_usart.h"
 #include "bsp_i2c.h"
 #include "qst_sw_i2c.h"
+#include "qst_sw_i2c_2.h"
 
 #define QMP6988_SLAVE_ADDRESS_L  0x70
 #define QMP6988_SLAVE_ADDRESS_H  0x56
@@ -116,6 +117,7 @@ typedef struct qmp6988_ik_data {
 
 typedef struct qmp6988_data
 {
+	uint8_t					i2c_id;
 	uint8_t					slave;
 	uint8_t					chip_id;
 	//uint8_t					power_mode;

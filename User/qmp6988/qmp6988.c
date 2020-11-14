@@ -60,7 +60,7 @@ static void qmp6988_delay(unsigned int delay)
 	}
 }
 
-uint8_t qmp6988_WriteReg(uint8_t slave, uint8_t reg_add,uint8_t reg_dat)
+uint8_t qmp6988_WriteReg(qmp6988_data *qmp6988, uint8_t reg_add,uint8_t reg_dat)
 {
 	uint8_t ret = 0;
 	uint32_t retry = 0;
@@ -70,16 +70,19 @@ uint8_t qmp6988_WriteReg(uint8_t slave, uint8_t reg_add,uint8_t reg_dat)
 #if defined(QST_USE_SPI)
 		ret =  qmp6988_spi_write(reg_add, reg_dat);
 #elif defined(QST_USE_SW_I2C)
-		ret = qst_sw_writereg(slave<<1, reg_add, reg_dat);
+		if(qmp6988->i2c_id == 1)
+			ret = qst_sw_writereg_2((qmp6988->slave)<<1, reg_add, reg_dat);
+		else
+			ret = qst_sw_writereg((qmp6988->slave)<<1, reg_add, reg_dat);
 #else
-		ret = I2C_ByteWrite(slave<<1, reg_add, reg_dat); 
+		ret = I2C_ByteWrite((qmp6988->slave)<<1, reg_add, reg_dat); 
 #endif
 	}
 
 	return ret;
 }
 
-uint8_t qmp6988_ReadData(uint8_t slave, uint8_t reg_add,unsigned char* Read,uint8_t num)
+uint8_t qmp6988_ReadData(qmp6988_data *qmp6988, uint8_t reg_add,unsigned char* Read,uint8_t num)
 {
 	uint8_t ret = 0;
 	uint32_t retry = 0;
@@ -89,9 +92,12 @@ uint8_t qmp6988_ReadData(uint8_t slave, uint8_t reg_add,unsigned char* Read,uint
 #if defined(QST_USE_SPI)
 		ret = qmp6988_spi_read(reg_add, Read, num);
 #elif defined(QST_USE_SW_I2C)
-		ret = qst_sw_readreg(slave<<1, reg_add, Read, num);
+		if(qmp6988->i2c_id == 1)
+			ret = qst_sw_readreg_2((qmp6988->slave)<<1, reg_add, Read, num);
+		else
+			ret = qst_sw_readreg((qmp6988->slave)<<1, reg_add, Read, num);
 #else
-		ret = I2C_BufferRead(slave<<1, reg_add, Read, num);
+		ret = I2C_BufferRead((qmp6988->slave)<<1, reg_add, Read, num);
 #endif
 	}
 
@@ -100,26 +106,22 @@ uint8_t qmp6988_ReadData(uint8_t slave, uint8_t reg_add,unsigned char* Read,uint
 
 static uint8_t qmp6988_device_check(qmp6988_data *qmp6988)
 {
-	uint8_t slave_addr[2] = {QMP6988_SLAVE_ADDRESS_L, QMP6988_SLAVE_ADDRESS_H};
-	uint8_t ret = 0;
-	uint8_t i;
-
-	for(i=0; i<2; i++)
+	if((qmp6988->slave != QMP6988_SLAVE_ADDRESS_L)&&(qmp6988->slave != QMP6988_SLAVE_ADDRESS_H))
 	{
-		qmp6988->slave = slave_addr[i];
-		ret = qmp6988_ReadData(qmp6988->slave, QMP6988_CHIP_ID_REG, &(qmp6988->chip_id), 1);
-		if(ret == 0){
-			QMP6988_LOG("%s: read 0xD1 failed\n",__func__);
-			continue;
-		}
-		QMP6988_LOG("qmp6988 read chip id = 0x%x\n", qmp6988->chip_id);
-		if(qmp6988->chip_id == QMP6988_CHIP_ID)
-		{
-			return 1;
-		}
+		QMP6988_LOG("qmp6988 device slave addr error!\n");
+		return 0;
 	}
-
-	return 0;
+	qmp6988_ReadData(qmp6988, QMP6988_CHIP_ID_REG, &(qmp6988->chip_id), 1);
+	if(qmp6988->chip_id == QMP6988_CHIP_ID)
+	{
+		QMP6988_LOG("qmp6988 slave:0x%x read chip id = 0x%x\n",qmp6988->slave, qmp6988->chip_id);
+		return 1;
+	}
+	else
+	{
+		QMP6988_LOG("qmp6988 slave:0x%x read chip id = 0x%x error!\n",qmp6988->slave, qmp6988->chip_id);
+		return 0;
+	}
 }
 
 static int qmp6988_get_calibration_data(qmp6988_data *qmp6988)
@@ -143,7 +145,7 @@ static int qmp6988_get_calibration_data(qmp6988_data *qmp6988)
 		//	status = qmp6988_ReadData(qmp6988_cali_data_START+len,&a_data_u8r[len],8);
 		//else
 		//	status = qmp6988_ReadData(qmp6988_cali_data_START+len,&a_data_u8r[len],(qmp6988_cali_data_LENGTH-len));
-		status = qmp6988_ReadData(qmp6988->slave,QMP6988_CALIBRATION_DATA_START+len,&a_data_u8r[len],1);
+		status = qmp6988_ReadData(qmp6988,QMP6988_CALIBRATION_DATA_START+len,&a_data_u8r[len],1);
 		if (status == 0)
 		{
 			QMP6988_LOG("qmp6988 read 0xA0 error!");
@@ -291,13 +293,13 @@ static void qmp6988_software_reset(qmp6988_data *qmp6988)
 #if 0
 	uint8_t ret = 0; 
 
-	ret = qmp6988_WriteReg(qmp6988->slave, QMP6988_RESET_REG, 0xe6);
+	ret = qmp6988_WriteReg(qmp6988, QMP6988_RESET_REG, 0xe6);
 	if(ret == 0)
 	{
 		QMP6988_LOG("qmp6988_software_reset fail!!! \n");
 	}
 	qmp6988_delay(20);
-	ret = qmp6988_WriteReg(qmp6988->slave, QMP6988_RESET_REG, 0x00);
+	ret = qmp6988_WriteReg(qmp6988, QMP6988_RESET_REG, 0x00);
 #endif
 }
 
@@ -309,7 +311,7 @@ static void qmp6988_set_powermode(qmp6988_data *qmp6988, int power_mode)
 	//if(power_mode == qmp6988->power_mode)
 	//	return;
 
-	qmp6988_ReadData(qmp6988->slave, QMP6988_CTRLMEAS_REG, &data, 1);
+	qmp6988_ReadData(qmp6988, QMP6988_CTRLMEAS_REG, &data, 1);
 	data = data&0xfc;
 	if(power_mode == QMP6988_SLEEP_MODE)
 	{
@@ -323,7 +325,7 @@ static void qmp6988_set_powermode(qmp6988_data *qmp6988, int power_mode)
 	{
 		data |= 0x03;
 	}
-	qmp6988_WriteReg(qmp6988->slave, QMP6988_CTRLMEAS_REG, data);
+	qmp6988_WriteReg(qmp6988, QMP6988_CTRLMEAS_REG, data);
 
 	QMP6988_LOG("qmp_set_powermode 0xf4=0x%x \n", data);
 	
@@ -336,7 +338,7 @@ static void qmp6988_set_filter(qmp6988_data *qmp6988, unsigned char filter)
 	uint8_t data;
 
 	data = (filter&0x03);
-	qmp6988_WriteReg(qmp6988->slave, QMP6988_CONFIG_REG, data);
+	qmp6988_WriteReg(qmp6988, QMP6988_CONFIG_REG, data);
 
 	qmp6988_delay(20);
 }
@@ -345,10 +347,10 @@ static void qmp6988_set_oversampling_p(qmp6988_data *qmp6988, unsigned char over
 {
 	uint8_t data;
 
-	qmp6988_ReadData(qmp6988->slave, QMP6988_CTRLMEAS_REG, &data, 1);
+	qmp6988_ReadData(qmp6988, QMP6988_CTRLMEAS_REG, &data, 1);
 	data &= 0xe3;
 	data |= (oversampling_p<<2);
-	qmp6988_WriteReg(qmp6988->slave, QMP6988_CTRLMEAS_REG, data);
+	qmp6988_WriteReg(qmp6988, QMP6988_CTRLMEAS_REG, data);
 	qmp6988_delay(20);
 }
 
@@ -356,10 +358,10 @@ static void qmp6988_set_oversampling_t(qmp6988_data *qmp6988, unsigned char over
 {
 	uint8_t data;
 
-	qmp6988_ReadData(qmp6988->slave, QMP6988_CTRLMEAS_REG, &data, 1);
+	qmp6988_ReadData(qmp6988, QMP6988_CTRLMEAS_REG, &data, 1);
 	data &= 0x1f;
 	data |= (oversampling_t<<5);
-	qmp6988_WriteReg(qmp6988->slave, QMP6988_CTRLMEAS_REG, data);
+	qmp6988_WriteReg(qmp6988, QMP6988_CTRLMEAS_REG, data);
 	qmp6988_delay(20);
 }
 
@@ -438,10 +440,10 @@ void qmp6988_calc_pressure(qmp6988_data *qmp6988, float *press, float *tempeartu
 	}
 #endif
 	// press
-	err = qmp6988_ReadData(qmp6988->slave, QMP6988_PRESSURE_MSB_REG, a_data_u8r, 6);
+	err = qmp6988_ReadData(qmp6988, QMP6988_PRESSURE_MSB_REG, a_data_u8r, 6);
 	if(err == 0)
 	{
-		QMP6988_LOG("qmp6988 read press raw error! \n");
+		//QMP6988_LOG("qmp6988 read press raw error! \n");
 		return;
 	}
 	P_read = (QMP6988_U32_t)(
@@ -498,9 +500,9 @@ void qmp6988_dumpreg(qmp6988_data *qmp6988)
 {
 	uint8_t data_u8r = 0;
 
-	qmp6988_ReadData(qmp6988->slave, QMP6988_CTRLMEAS_REG, &data_u8r, 1);
+	qmp6988_ReadData(qmp6988, QMP6988_CTRLMEAS_REG, &data_u8r, 1);
 	QMP6988_LOG("CTRLMEAS_REG (0x%x) = 0x%x \n", QMP6988_CTRLMEAS_REG, data_u8r);
-	qmp6988_ReadData(qmp6988->slave, QMP6988_CONFIG_REG, &data_u8r, 1);
+	qmp6988_ReadData(qmp6988, QMP6988_CONFIG_REG, &data_u8r, 1);
 	QMP6988_LOG("CONFIG_REG (0x%x) = 0x%x \n", QMP6988_CONFIG_REG, data_u8r);
 }
 

@@ -88,7 +88,7 @@ void flash_write_u16(void *buff, uint16_t len)
 	{
 		for(i=0; i<((len+1)/2); i++)
 		{
-				FLASHStatus = FLASH_ProgramHalfWord(WRITE_START_ADDR+(i*sizeof(uint16_t)), buff_u16[i]);
+			FLASHStatus = FLASH_ProgramHalfWord(WRITE_START_ADDR+(i*sizeof(uint16_t)), buff_u16[i]);
 		}
 		FLASH_Lock();
 	}
@@ -108,7 +108,7 @@ void flash_write_u32(void *buff, uint32_t len)
 
 	if(FLASHStatus == FLASH_COMPLETE)
 	{
-		for(i=0; i<((len+1)/2); i++)
+		for(i=0; i<((len+3)/4); i++)
 		{
 				FLASHStatus = FLASH_ProgramWord(WRITE_START_ADDR+(i*sizeof(uint32_t)), buff_u32[i]);
 		}

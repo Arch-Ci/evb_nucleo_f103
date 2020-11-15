@@ -5,9 +5,9 @@
 //#define QST_EVB_DEMO_ACC
 //#define QST_EVB_DEMO_MAG
 //#define QST_EVB_DEMO_MAG_CALI
-//#define QST_EVB_DEMO_PRESS		3
+#define QST_EVB_DEMO_PRESS		3
 //#define QST_EVB_DEMO_TEMPEARTURE
-#define QST_EVB_DEMO_9AXIS
+//#define QST_EVB_DEMO_9AXIS
 //#define QST_EVB_DEMO_9AXIS_ALGO
 
 //#define QST_EVB_DEMO_SLEEP_ENABLE
@@ -502,9 +502,9 @@ int qst_imu_cali(float acc[3],float gyro[3], int side)
 		QST_PRINTF("acc avg:%f %f %f gyr avg:%f %f %f\n", avg_acc[0],avg_acc[1],avg_acc[2],avg_gyro[0],avg_gyro[1],avg_gyro[2]);
 		QST_PRINTF("acc min:%f %f %f max:%f %f %f\n", acc_cali_min.x,acc_cali_min.y,acc_cali_min.z,acc_cali_max.x,acc_cali_max.y,acc_cali_max.z);
 // check data	
-		if((QST_ABS(acc_cali_max.x-acc_cali_min.x)>1)
-			||(QST_ABS(acc_cali_max.y-acc_cali_min.y)>1)
-			||(QST_ABS(acc_cali_max.z-acc_cali_min.z)>1))
+		if((QST_ABS(acc_cali_max.x-acc_cali_min.x)>1.0f)
+			||(QST_ABS(acc_cali_max.y-acc_cali_min.y)>1.0f)
+			||(QST_ABS(acc_cali_max.z-acc_cali_min.z)>1.0f))
 		{
 			cali_count = 0;
 			QST_PRINTF("cali fail! device is not static! \n");
@@ -512,7 +512,7 @@ int qst_imu_cali(float acc[3],float gyro[3], int side)
 		}
 		if(side)
 		{
-			if((QST_ABS(avg_acc[0])>3) ||(QST_ABS(avg_acc[1])>3)||(QST_ABS(avg_acc[2]-9.807)>3))
+			if((QST_ABS(avg_acc[0])>3.0f) ||(QST_ABS(avg_acc[1])>3.0f)||(QST_ABS(avg_acc[2]-9.807f)>3.0f))
 			{
 				cali_count = 0;
 				QST_PRINTF("cali fail! Acc Offset too large! \n");
@@ -521,7 +521,7 @@ int qst_imu_cali(float acc[3],float gyro[3], int side)
 		}
 		else
 		{
-			if((QST_ABS(avg_acc[0])>3) ||(QST_ABS(avg_acc[1])>3)||(QST_ABS(avg_acc[2]+9.807)>3))
+			if((QST_ABS(avg_acc[0])>3.0f) ||(QST_ABS(avg_acc[1])>3.0f)||(QST_ABS(avg_acc[2]+9.807f)>3.0f))
 			{
 				cali_count = 0;
 				QST_PRINTF("cali fail! Acc Offset too large! \n");
@@ -763,7 +763,7 @@ void qst_evb_acc_drdy(void)
 		qma6100_readreg(0x09, databuf, 4);
 #endif
 	}	
-	QMAX981_LOG("drdy	%f	%f	%f\n", g_evb.out.data[0], g_evb.out.data[1], g_evb.out.data[2]);
+	QST_PRINTF("drdy	%f	%f	%f\n", g_evb.out.data[0], g_evb.out.data[1], g_evb.out.data[2]);
 #if defined(QST_EVB_DEMO_SLEEP_ENABLE)
 	if(qst_evb_sleep_check(g_evb.out.data, 500))
 	{
@@ -1018,6 +1018,8 @@ static float qmp6988_press_filter(float* in)
 }
 #endif
 
+
+#if defined(QST_EVB_DEMO_PRESS)
 float qmp6988_calc_altitude(float press, float tempearture)
 {
 	float altitude;
@@ -1028,7 +1030,6 @@ float qmp6988_calc_altitude(float press, float tempearture)
 	return altitude;
 }
 
-#if defined(QST_EVB_DEMO_PRESS)
 void qst_evb_press_tim(void)
 {
 #if (QST_EVB_DEMO_PRESS > 1)

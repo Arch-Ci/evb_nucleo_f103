@@ -10,13 +10,13 @@
 	* 1-修改总线时钟的宏，uart1挂载到apb2总线，其他uart挂载到apb1总线
 	* 2-修改GPIO的宏
   */
+#define  DEBUG_USART_BAUDRATE           921600
 
 #if defined(USE_UART1)
 // 串口1-USART1
 #define  DEBUG_USARTx                   USART1
 #define  DEBUG_USART_CLK                RCC_APB2Periph_USART1
 #define  DEBUG_USART_APBxClkCmd         RCC_APB2PeriphClockCmd
-#define  DEBUG_USART_BAUDRATE           115200
 
 // USART GPIO 引脚宏定义
 #define  DEBUG_USART_GPIO_CLK           (RCC_APB2Periph_GPIOA)
@@ -36,7 +36,6 @@
 #define  DEBUG_USARTx                   USART2
 #define  DEBUG_USART_CLK                RCC_APB1Periph_USART2
 #define  DEBUG_USART_APBxClkCmd         RCC_APB1PeriphClockCmd
-#define  DEBUG_USART_BAUDRATE           921600	//115200
 
 //// USART GPIO 引脚宏定义
 #define  DEBUG_USART_GPIO_CLK           (RCC_APB2Periph_GPIOA)
@@ -56,7 +55,6 @@
 #define  DEBUG_USARTx                   USART3
 #define  DEBUG_USART_CLK                RCC_APB1Periph_USART3
 #define  DEBUG_USART_APBxClkCmd         RCC_APB1PeriphClockCmd
-#define  DEBUG_USART_BAUDRATE           115200
 
 //// USART GPIO 引脚宏定义
 #define  DEBUG_USART_GPIO_CLK           (RCC_APB2Periph_GPIOB)
@@ -76,7 +74,6 @@
 #define  DEBUG_USARTx                   UART4
 #define  DEBUG_USART_CLK                RCC_APB1Periph_UART4
 #define  DEBUG_USART_APBxClkCmd         RCC_APB1PeriphClockCmd
-#define  DEBUG_USART_BAUDRATE           115200
 
 //// USART GPIO 引脚宏定义
 #define  DEBUG_USART_GPIO_CLK           (RCC_APB2Periph_GPIOC)
@@ -96,7 +93,6 @@
 #define  DEBUG_USARTx                   UART5
 #define  DEBUG_USART_CLK                RCC_APB1Periph_UART5
 #define  DEBUG_USART_APBxClkCmd         RCC_APB1PeriphClockCmd
-#define  DEBUG_USART_BAUDRATE           115200
 
 //// USART GPIO 引脚宏定义
 #define  DEBUG_USART_GPIO_CLK           (RCC_APB2Periph_GPIOC|RCC_APB2Periph_GPIOD)

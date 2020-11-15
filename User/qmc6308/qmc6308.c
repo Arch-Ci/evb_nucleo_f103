@@ -302,7 +302,7 @@ void qmc6308_soft_reset(void)
 	qmc6308_write_reg(QMC6308_CTL_REG_TWO, 0x00);
 }
 
-static int qmc6308_enable(void)
+int qmc6308_enable(void)
 {
 	int ret;
 
@@ -335,7 +335,7 @@ static int qmc6308_enable(void)
 	return ret;
 }
 
-static int qmc6308_disable(void)
+int qmc6308_disable(void)
 {
 	int ret;
 

@@ -17,9 +17,11 @@
 
 #include "bsp_usart.h"
 
+#define BSP_UART_RX_MAX		64
+
  typedef struct
  {
-	 unsigned char	 buf[128];
+	 unsigned char	 buf[BSP_UART_RX_MAX];
 	 unsigned short  index;
 	 unsigned char	 finish;
  } bsp_usart_rx;
@@ -136,9 +138,14 @@ unsigned char bsp_uart_get_rx_buf(unsigned char **buf, unsigned short* len)
 
 void bsp_uart_rx_reset(void)
 {
+	int i;
+
 	rx_buf.finish = 0;
 	rx_buf.index = 0;
-	memset(rx_buf.buf, 0, sizeof(rx_buf.buf));
+	for(i=0; i<BSP_UART_RX_MAX; i++)
+	{
+		rx_buf.buf[i] = 0;
+	}
 }
 
 void USART1_IRQHandler(void)

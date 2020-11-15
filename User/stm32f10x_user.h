@@ -159,7 +159,7 @@ typedef struct
 
 typedef struct
 {
-	qst_sensor_type		init_sensor;
+	int					init_sensor;
 	qst_acc_type		accel;
 	qst_mag_type		mag;
 	qst_gyro_type		gyro;

@@ -113,6 +113,8 @@ typedef struct
 }qmc6308_data_t;
 
 int qmc6308_init(void);
+int qmc6308_enable(void);
+int qmc6308_disable(void);
 void qmc6308_soft_reset(void);
 int qmc6308_read_mag_xyz(float *data);
 int qmc6308_do_selftest(short *data);

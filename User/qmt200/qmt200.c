@@ -4,7 +4,7 @@
 
 #define QMT200_LOG		printf
 
-static unsigned char qmt200_chipid = 0;
+//static unsigned char qmt200_chipid = 0;
 static uint8_t	qmt200_addr = QMT200_IIC_ADDR;
 
 static uint8_t qmt200_read_reg(uint8_t addr, uint8_t *data, uint8_t len)
@@ -84,10 +84,12 @@ int qmt200_init(void)
 	uint8_t	buf_reg[4];
 
 	qmt200_addr = QMT200_IIC_ADDR;
-	qmt200_read_reg(0x00, buf_reg, 3);
-	qmt200_read_reg(0x01, buf_reg, 3);
-	qmt200_read_reg(0x20, buf_reg, 3);
+	ret = qmt200_read_reg(0x00, buf_reg, 3);
+	ret = qmt200_read_reg(0x01, buf_reg, 3);
+	ret = qmt200_read_reg(0x20, buf_reg, 3);
+	
+	qmt200_write_reg(0x00, 0x00);
 
-	return 1;
+	return ret;
 }
 

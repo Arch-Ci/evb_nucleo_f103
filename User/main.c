@@ -8,7 +8,7 @@
 //#define QST_EVB_DEMO_PRESS		3
 //#define QST_EVB_DEMO_TEMPEARTURE
 #define QST_EVB_DEMO_9AXIS
-#define QST_EVB_DEMO_9AXIS_ALGO
+//#define QST_EVB_DEMO_9AXIS_ALGO
 
 //#define QST_EVB_DEMO_SLEEP_ENABLE
 
@@ -290,7 +290,7 @@ static void evb_irq_handle(void)
 }
 
 
-static void evb_setup_irq(qst_nucleo_int int_type)
+static void evb_setup_irq(int int_type)
 {
 	NVIC_InitTypeDef NVIC_InitStructure;
 	EXTI_InitTypeDef EXTI_InitStructure;
@@ -571,6 +571,7 @@ void qst_imu_add_offset(float acc[3],float gyro[3])
 }
 
 // axis convert
+#if 0
 static void qst_axis_convert2(float *raw, float *out, int layout)
 {
 	if(layout >=4 && layout <= 7)
@@ -602,7 +603,7 @@ static void qst_axis_convert2(float *raw, float *out, int layout)
 		out[1] = -out[1];
 	}
 }
-
+#endif
 
 static void qst_axis_convert(float data[3], int layout)
 {
@@ -697,7 +698,7 @@ static void evb_exe_rx_buf(void)
 	{
 		if((rx_buf[0]=='s')&&(rx_buf[1]=='l')&&(rx_buf[2]=='e')&&(rx_buf[3]=='e')&&(rx_buf[4]=='p'))
 		{
-#if defined(QST_EVB_DEMO_ACC)		
+#if defined(QST_EVB_DEMO_ACC)
 			if(g_evb.accel == QST_ACCEL_QMAX981)
 			{
 				qmaX981_writereg(0x11, 0x00);
@@ -711,7 +712,7 @@ static void evb_exe_rx_buf(void)
 		}
 		else if((rx_buf[0]=='w')&&(rx_buf[1]=='a')&&(rx_buf[2]=='k')&&(rx_buf[3]=='e'))
 		{
-#if defined(QST_EVB_DEMO_ACC)		
+#if defined(QST_EVB_DEMO_ACC)
 			if(g_evb.accel == QST_ACCEL_QMAX981)
 			{
 				qmaX981_writereg(0x11, 0x80);
@@ -723,55 +724,24 @@ static void evb_exe_rx_buf(void)
 			QST_PRINTF("accel wake\n");
 #endif
 		}		
-		else if((rx_buf[0]=='s')&&(rx_buf[1]=='t')&&(rx_buf[2]=='e')&&(rx_buf[3]=='p'))
+		else if((rx_buf[0]=='r')&&(rx_buf[1]=='s')&&(rx_buf[2]=='t'))
 		{
-			unsigned char reg12_value = 0;
-			if(rx_buf[4]=='0')
-			{
-				reg12_value = 0x14;
-				QST_PRINTF("step diasble\n");
-			}
-			else
-			{
-				reg12_value = 0x94;
-				QST_PRINTF("step enable\n");
-			}
-
+#if defined(QST_EVB_DEMO_ACC)
 			if(g_evb.accel == QST_ACCEL_QMAX981)
 			{
-				qmaX981_writereg(0x12, reg12_value);
+				qmaX981_init();
 			}
 			else if(g_evb.accel == QST_ACCEL_QMA6100)
 			{
-				qma6100_writereg(0x12, reg12_value);
+				qma6100_init();
 			}
+			QST_PRINTF("accel reset\n");	
+#endif
 		}
 		bsp_uart_rx_reset();
 	}
 }
 
-	
-void qst_evb_acc_read(void)
-{
-	if(g_evb.accel == QST_ACCEL_QMA6100)
-	{
-		qma6100_read_acc_xyz(g_evb.out.data);
-#if defined(QMA6100_STEPCOUNTER)
-		g_evb.step = qma6100_read_stepcounter();
-#endif
-	}
-	else if(g_evb.accel == QST_ACCEL_QMAX981)
-	{
-		qmaX981_read_xyz(g_evb.out.data);
-#if defined(QMAX981_STEPCOUNTER)
-		g_evb.step = qmaX981_read_stepcounter();
-#endif
-	}
-	QST_PRINTF("%f	%f	%f	step:%d\r\n", g_evb.out.x, g_evb.out.y, g_evb.out.z, g_evb.step);
-#if defined(LCM_SD1306_SUPPORT)
-	sd1306_show_num(1, 1, g_evb.step, 6, 16);
-#endif
-}
 
 void qst_evb_acc_drdy(void)
 {
@@ -946,6 +916,7 @@ void qst_evb_acc_tim2(void)
 		g_evb.step = qmaX981_read_stepcounter();
 #endif
 	}
+	qst_axis_convert(g_evb.out.data, 0);
 	QST_PRINTF("Acc: %f	%f	%f	step:%d\r\n", g_evb.out.x, g_evb.out.y, g_evb.out.z, g_evb.step);
 #if defined(LCM_SD1306_SUPPORT)
 	sd1306_show_num(1, 1, g_evb.step, 6, FONT_SIZE16);
@@ -1091,7 +1062,7 @@ void qst_evb_demo_press(void)
 
 	while(1)
 	{
-		evb_irq_handle();		
+		evb_irq_handle();
 		evb_tim_handle();
 		evb_exe_rx_buf();
 	}
@@ -1110,12 +1081,15 @@ void qst_evb_demo_tempearture(void)
 	QST_PRINTF("qst_evb_demo_tempearture \n");
 	g_evb.out.sensor = QST_SENSOR_TEMPEARTURE;
 	g_evb.report_mode = QST_REPORT_POLLING;
+	evb_setup_irq(QST_NUCLEO_INT_NONE);
 	evb_setup_timer(TIM3, 300, ENABLE);
 	g_evb.tim3_func = qst_evb_tempearture_tim;
 
 	while(1)
 	{
+		evb_irq_handle();
 		evb_tim_handle();
+		evb_exe_rx_buf();
 	}
 }
 #endif
@@ -1172,8 +1146,9 @@ void qst_evb_mag_tim2(void)
 
 void qst_evb_demo_mag(void)
 {
+#if defined(QST_EVB_DEMO_MAG_CALI)
 	int imu_cali = 0;
-
+#endif
 	g_evb.out.sensor = QST_SENSOR_MAG;
 	g_evb.report_mode = QST_REPORT_POLLING;
 	qst_delay(100);
@@ -1225,7 +1200,9 @@ void qst_algo_imu_init(void)
 
 void qst_algo_imu_run(float dt)
 {
+#if defined(QST_EVB_DEMO_9AXIS_ALGO)
 	static unsigned int imu_algo_count = 0;
+#endif
 
 	if(g_evb.accgyro == QST_ACCGYRO_QMI8610)
 	{
@@ -1407,17 +1384,37 @@ void qst_evb_demo_9axis(void)
 	{
 		evb_setup_irq(QST_NUCLEOPC7_IMU_INT1);
 		evb_setup_timer(TIM2, 5, ENABLE);
-		g_evb.tim2_func = qst_evb_imu_tim;		
+		g_evb.tim2_func = qst_evb_imu_tim;
 	}
 	
 	while(1)
 	{
-		evb_irq_handle();		
+		evb_irq_handle();
 		evb_tim_handle();
+		evb_exe_rx_buf();
 	}
 }
 #endif
 
+
+void qst_evb_null_tim(void)
+{
+	QST_PRINTF("no sensor!\n");
+}
+
+void qst_evb_demo_null(void)
+{
+	evb_setup_irq(QST_NUCLEO_INT_NONE);
+	evb_setup_timer(TIM2, 500, ENABLE);
+	g_evb.tim2_func = qst_evb_null_tim;
+
+	while(1)
+	{
+		evb_irq_handle();
+		evb_tim_handle();
+		evb_exe_rx_buf();
+	}
+}
 
 int main(void)
 {
@@ -1447,15 +1444,15 @@ int main(void)
 #endif
 	memset(&g_evb, 0, sizeof(g_evb));
 #if defined(QST_EVB_DEMO_ACC)
-	g_evb.init_sensor = (qst_sensor_type)(QST_SENSOR_ACCEL);
+	g_evb.init_sensor = QST_SENSOR_ACCEL;
 #elif defined(QST_EVB_DEMO_PRESS)
-	g_evb.init_sensor = (qst_sensor_type)(QST_SENSOR_PRESS);
+	g_evb.init_sensor = QST_SENSOR_PRESS;
 #elif defined(QST_EVB_DEMO_MAG)
-	g_evb.init_sensor = (qst_sensor_type)(QST_SENSOR_MAG);
+	g_evb.init_sensor = QST_SENSOR_MAG;
 #elif defined(QST_EVB_DEMO_9AXIS)
-	g_evb.init_sensor = (qst_sensor_type)(QST_SENSOR_MAG|QST_SENSOR_ACCGYRO);
+	g_evb.init_sensor = QST_SENSOR_MAG|QST_SENSOR_ACCGYRO;
 #else
-	g_evb.init_sensor = (qst_sensor_type)(QST_SENSOR_TOTAL);
+	g_evb.init_sensor = QST_SENSOR_TOTAL;
 #endif
 
 	if(g_evb.init_sensor & QST_SENSOR_ACCEL)
@@ -1571,11 +1568,7 @@ int main(void)
 		qst_evb_demo_9axis();
 #endif
 
-	while(1)
-	{	
-		qst_delay(500);
-		QST_PRINTF("imu sensor error\n");
-	}
+	qst_evb_demo_null();
 }
 
 
